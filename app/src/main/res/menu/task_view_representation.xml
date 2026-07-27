@@ -2,13 +2,12 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/select_date"
+        android:id="@+id/task_tracker_select_date_menu_item"
         android:icon="@drawable/calendar_24dp"
         android:title="@string/select_date"
         app:showAsAction="always" />
     <item
-        android:id="@+id/daily"
-        android:icon="@drawable/date_day_24dp"
-        android:title="@string/daily_representation"
+        android:id="@+id/task_tracker_representation_menu_item"
+        android:title=""
         app:showAsAction="ifRoom" />
 </menu>
