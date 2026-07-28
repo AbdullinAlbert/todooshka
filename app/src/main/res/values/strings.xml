@@ -3,7 +3,9 @@
     <string name="tasks">Задачи</string>
     <string name="notes">Заметки</string>
     <string name="settings">Настройки</string>
-    <string name="daily_representation">Ежедневник</string>
-    <string name="weekly_representation">Еженедельник</string>
+    <string name="daily_task_tracker">Ежедневник</string>
+    <string name="weekly_task_tracker">Еженедельник</string>
+    <string name="daily_task_representation_mode">Режим ежедневника</string>
+    <string name="weekly_task_representation_mode">Режим еженедельника</string>
     <string name="select_date">Выбрать дату</string>
 </resources>

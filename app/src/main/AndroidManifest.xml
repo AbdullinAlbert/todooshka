@@ -11,7 +11,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Todooshka">
         <activity
-            android:name=".presentation.MainActivity"
+            android:name=".presentation.screen.main_screen_container.MainActivity"
             android:exported="true"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>

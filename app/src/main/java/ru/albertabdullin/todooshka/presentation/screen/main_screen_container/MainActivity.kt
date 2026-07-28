@@ -1,4 +1,4 @@
-package ru.albertabdullin.todooshka.presentation
+package ru.albertabdullin.todooshka.presentation.screen.main_screen_container
 
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
@@ -7,7 +7,6 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import ru.albertabdullin.todooshka.R
 import ru.albertabdullin.todooshka.databinding.ActivityMainBinding
-import ru.albertabdullin.todooshka.presentation.screen.main_screen.MainViewPagerAdapter
 
 class MainActivity : AppCompatActivity() {
 

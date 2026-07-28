@@ -1,4 +1,4 @@
-package ru.albertabdullin.todooshka.presentation.screen.main_screen
+package ru.albertabdullin.todooshka.presentation.screen.main_screen_container
 
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
