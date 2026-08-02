@@ -42,6 +42,7 @@ android {
 
 dependencies {
     ksp(libs.androidx.room.compiler)
+    coreLibraryDesugaring(libs.android.tools.desugar)
     implementation(libs.androidx.activity.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.constraintlayout)

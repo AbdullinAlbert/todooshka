@@ -5,9 +5,10 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import ru.albertabdullin.todooshka.databinding.TaskTrackerDailyDateTabBinding
 import java.time.LocalDate
+import java.time.temporal.ChronoUnit
 
 class RecyclerViewDailyAdapter(
-    firstAvailableDate: LocalDate,
+    private var firstAvailableDate: LocalDate,
     private val onDateClick: (LocalDate) -> Unit,
 ) : RecyclerView.Adapter<DailyViewHolder>() {
 
@@ -22,12 +23,24 @@ class RecyclerViewDailyAdapter(
     }
 
     override fun getItemCount(): Int {
-        TODO("Not yet implemented")
+        return ChronoUnit.DAYS.between(firstAvailableDate, LAST_AVAILABLE_DATE).toInt() + 1
+    }
+
+    fun updateFirstAvailableDate(newDate: LocalDate) {
+        if (newDate == firstAvailableDate) return
+
+        val previousDate = firstAvailableDate
+
+        if (newDate.isBefore(previousDate)) {
+            val insertedCount = ChronoUnit.DAYS.between(newDate, previousDate).toInt()
+
+            firstAvailableDate = newDate
+            notifyItemRangeInserted(0, insertedCount)
+        }
     }
 
     companion object {
-        private val LAST_AVAILABLE_DATE =
-            LocalDate.of(2127, 1, 1)
+        private val LAST_AVAILABLE_DATE = LocalDate.of(2127, 1, 1)
     }
 }
 
