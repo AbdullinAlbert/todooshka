@@ -4,6 +4,7 @@
     <color name="white">#FFFFFFFF</color>
     <color name="task_tracker_date_tab_background">#FFFFFF</color>
     <color name="task_tracker_selected_date_tab_background">#FFCD80</color>
-    <color name="task_tracker_today_date_tab_background">#f9dfbb</color>
     <color name="task_tracker_selected_date_tab_text_color">#7d570e</color>
+    <color name="task_tracker_today_date_tab_background">#f9dfbb</color>
+    <color name="task_tracker_today_date_tab_text_color">#604100</color>
 </resources>

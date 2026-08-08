@@ -5,11 +5,11 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:padding="12dp"
-    android:textSize="16sp"
+    android:textSize="12sp"
     android:textStyle="bold"
     android:elevation="4dp"
     android:background="@drawable/task_tracker_date_tab_background"
     android:textColor="@color/black"
-    tools:text="14.04.1994 (Пн)">
+    tools:text="14.04.1994 (пн)">
 
 </TextView>

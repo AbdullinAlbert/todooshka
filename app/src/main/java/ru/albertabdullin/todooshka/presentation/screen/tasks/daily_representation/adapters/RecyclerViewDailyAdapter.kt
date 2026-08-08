@@ -1,16 +1,24 @@
 package ru.albertabdullin.todooshka.presentation.screen.tasks.daily_representation.adapters
 
+import android.graphics.drawable.Drawable
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import ru.albertabdullin.todooshka.databinding.TaskTrackerDailyDateTabBinding
+import ru.albertabdullin.todooshka.domain.date_operations.DailyDateRange
+import ru.albertabdullin.todooshka.domain.date_operations.DateRangeChange
+import ru.albertabdullin.todooshka.presentation.screen.tasks.model.TabPropertyValues
 import java.time.LocalDate
-import java.time.temporal.ChronoUnit
 
 class RecyclerViewDailyAdapter(
-    private var firstAvailableDate: LocalDate,
+    private val dailyDateRange: DailyDateRange,
+    private val tabPropertyValuesProvider: (LocalDate) -> TabPropertyValues,
     private val onDateClick: (LocalDate) -> Unit,
-) : RecyclerView.Adapter<DailyViewHolder>() {
+) : RecyclerView.Adapter<RecyclerViewDailyAdapter.DailyViewHolder>() {
+
+    init {
+        setHasStableIds(true)
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DailyViewHolder {
         val inflater = LayoutInflater.from(parent.context)
@@ -19,34 +27,37 @@ class RecyclerViewDailyAdapter(
     }
 
     override fun onBindViewHolder(holder: DailyViewHolder, position: Int) {
-        TODO("Not yet implemented")
+        holder.bind(dailyDateRange.dateAt(position))
     }
 
-    override fun getItemCount(): Int {
-        return ChronoUnit.DAYS.between(firstAvailableDate, LAST_AVAILABLE_DATE).toInt() + 1
+    override fun getItemId(position: Int): Long {
+        return dailyDateRange.dateAt(position).toEpochDay()
     }
 
-    fun updateFirstAvailableDate(newDate: LocalDate) {
-        if (newDate == firstAvailableDate) return
+    override fun getItemCount() = dailyDateRange.size
 
-        val previousDate = firstAvailableDate
+    fun updateListRange(dateRangeChange: DateRangeChange) {
+        when (dateRangeChange) {
+            is DateRangeChange.None -> return
+            is DateRangeChange.InsertedAtStart -> {
+                notifyItemRangeInserted(0, dateRangeChange.count)
+            }
 
-        if (newDate.isBefore(previousDate)) {
-            val insertedCount = ChronoUnit.DAYS.between(newDate, previousDate).toInt()
-
-            firstAvailableDate = newDate
-            notifyItemRangeInserted(0, insertedCount)
+            is DateRangeChange.RemovedFromStart -> {
+                notifyItemRangeRemoved(0, dateRangeChange.count)
+            }
         }
     }
 
-    companion object {
-        private val LAST_AVAILABLE_DATE = LocalDate.of(2127, 1, 1)
+    inner class DailyViewHolder(private val binding: TaskTrackerDailyDateTabBinding) :
+        RecyclerView.ViewHolder(binding.root) {
+        fun bind(date: LocalDate) {
+            binding.dateTab.setOnClickListener { onDateClick(date) }
+            val tabPropertyValues = tabPropertyValuesProvider(date)
+            binding.dateTab.text = tabPropertyValues.formattedText
+            binding.dateTab.background = tabPropertyValues.background
+            binding.dateTab.setTextColor(tabPropertyValues.textColor)
+        }
     }
-}
 
-class DailyViewHolder(binding: TaskTrackerDailyDateTabBinding) :
-    RecyclerView.ViewHolder(binding.root) {
-    fun bind() {
-
-    }
 }

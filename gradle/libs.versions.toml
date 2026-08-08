@@ -13,6 +13,7 @@ roomRuntimeVersion = "2.8.4"
 viewpager2Version = "1.1.0"
 fragmentVersion = "1.8.9"
 androidDesugarVersion = "2.1.5"
+recyclerviewVersion = "1.4.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -28,6 +29,7 @@ androidx-constraintlayout = { group = "androidx.constraintlayout", name = "const
 androidx-viewpager2 = {group = "androidx.viewpager2", name = "viewpager2", version.ref = "viewpager2Version" }
 androidx-fragment = {module = "androidx.fragment:fragment-ktx", version.ref =  "fragmentVersion"}
 android-tools-desugar = {module = "com.android.tools:desugar_jdk_libs", version.ref = "androidDesugarVersion"}
+androidx-recyclerview = { group = "androidx.recyclerview", name = "recyclerview", version.ref = "recyclerviewVersion" }
 
 
 [plugins]

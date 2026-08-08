@@ -41,6 +41,7 @@ android {
 }
 
 dependencies {
+    implementation(libs.androidx.recyclerview)
     ksp(libs.androidx.room.compiler)
     coreLibraryDesugaring(libs.android.tools.desugar)
     implementation(libs.androidx.activity.ktx)
