@@ -6,14 +6,17 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import ru.albertabdullin.todooshka.R
 import ru.albertabdullin.todooshka.databinding.DailyRepresentationTaskFragmentBinding
 import ru.albertabdullin.todooshka.domain.date_operations.DailyDateRange
 import ru.albertabdullin.todooshka.domain.date_operations.LAST_AVAILABLE_DATE
-import ru.albertabdullin.todooshka.presentation.screen.tasks.TaskContainerFragment
 import ru.albertabdullin.todooshka.presentation.screen.tasks.daily_representation.adapters.RecyclerViewDailyAdapter
 import ru.albertabdullin.todooshka.presentation.screen.tasks.model.TabPropertyValues
+import ru.albertabdullin.todooshka.presentation.screen.tasks.viewmodel.TaskContainerViewModel
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 class DailyRepresentationTasksFragment : Fragment() {
     private var _binding: DailyRepresentationTaskFragmentBinding? = null
@@ -21,7 +24,10 @@ class DailyRepresentationTasksFragment : Fragment() {
     private var tabAdapter: RecyclerViewDailyAdapter? = null
     private lateinit var dailyDateRange: DailyDateRange
 
-    private val taskContainerFragment get() = requireParentFragment() as TaskContainerFragment
+    private val taskContainerViewModel: TaskContainerViewModel by viewModels(ownerProducer = { requireParentFragment() })
+
+    private val dateTimeFormatter =
+        DateTimeFormatter.ofPattern("d MMMM, EEEE", Locale.forLanguageTag("ru-RU"))
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -41,7 +47,7 @@ class DailyRepresentationTasksFragment : Fragment() {
                 var background: Int
                 var textColor: Int
                 when {
-                    date.isEqual(getSelectedDate()) -> {
+                    taskContainerViewModel.isSelectedDate(date) -> {
                         background = R.drawable.selected_task_tracker_date_tab_background
                         textColor = R.color.task_tracker_selected_date_tab_text_color
                     }
@@ -57,25 +63,14 @@ class DailyRepresentationTasksFragment : Fragment() {
                     }
                 }
                 TabPropertyValues(
-                    formattedText = "14.04.1994 (пн)",
+                    formattedText = date.format(dateTimeFormatter),
                     background = ResourcesCompat.getDrawable(resources, background, null)!!,
                     textColor = textColor
                 )
             },
-            onDateClick = { currentSelectedDate ->
-                val previousSelectedDate = getSelectedDate()
-                setSelectedDate(currentSelectedDate)
-                val previousSelectedTabPosition = dailyDateRange.positionOf(previousSelectedDate)
-                val currentSelectedTabPosition = dailyDateRange.positionOf(currentSelectedDate)
-                tabAdapter?.apply {
-                    notifyItemChanged(previousSelectedTabPosition)
-                    notifyItemChanged(currentSelectedTabPosition)
-                }
-            }
+            onDateClick = (taskContainerViewModel::setSelectedDate)
         )
-        binding.dailyDateTab.apply {
-            adapter = tabAdapter
-        }
+        binding.dailyDateTab.adapter = tabAdapter
     }
 
 
@@ -85,11 +80,4 @@ class DailyRepresentationTasksFragment : Fragment() {
         tabAdapter = null
     }
 
-    private fun getSelectedDate(): LocalDate {
-        return taskContainerFragment.getSelectedDate()
-    }
-
-    private fun setSelectedDate(selectedDate: LocalDate) {
-        taskContainerFragment.setSelectedDate(selectedDate)
-    }
 }

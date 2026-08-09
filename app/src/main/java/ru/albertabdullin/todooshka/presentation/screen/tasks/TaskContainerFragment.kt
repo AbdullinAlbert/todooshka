@@ -16,7 +16,7 @@ import androidx.lifecycle.Lifecycle
 import ru.albertabdullin.todooshka.R
 import ru.albertabdullin.todooshka.databinding.TaskContainerBinding
 import ru.albertabdullin.todooshka.presentation.screen.tasks.daily_representation.DailyRepresentationTasksFragment
-import java.time.LocalDate
+import ru.albertabdullin.todooshka.presentation.screen.tasks.weekly_representation.WeeklyRepresentationTasksFragment
 
 class TaskContainerFragment : Fragment() {
 
@@ -27,11 +27,8 @@ class TaskContainerFragment : Fragment() {
     private var representationTaskTrackerMode: RepresentationTaskTrackerMode =
         RepresentationTaskTrackerMode.Daily
 
-    private var selectedDateEpochDay = LocalDate.now().toEpochDay()
-
     private companion object {
         const val REPRESENTATION_TASK_MODE_KEY = "REPRESENTATION_TASK_MODE"
-        const val SELECTED_DATE_KEY = "SELECTED_DATE_KEY"
     }
 
     private var _binding: TaskContainerBinding? = null
@@ -47,7 +44,6 @@ class TaskContainerFragment : Fragment() {
         savedInstanceState?.also {
             representationTaskTrackerMode =
                 RepresentationTaskTrackerMode.valueOf(it.getString(REPRESENTATION_TASK_MODE_KEY)!!)
-            selectedDateEpochDay = it.getLong(SELECTED_DATE_KEY)
         }
 
         _binding = TaskContainerBinding.inflate(inflater)
@@ -63,7 +59,6 @@ class TaskContainerFragment : Fragment() {
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putString(REPRESENTATION_TASK_MODE_KEY, representationTaskTrackerMode.name)
-        outState.putLong(SELECTED_DATE_KEY, selectedDateEpochDay)
     }
 
     override fun onDestroyView() {
@@ -202,11 +197,4 @@ class TaskContainerFragment : Fragment() {
         }
     }
 
-    fun setSelectedDate(selectedDate: LocalDate) {
-        selectedDateEpochDay = selectedDate.toEpochDay()
-    }
-
-    fun getSelectedDate(): LocalDate {
-        return LocalDate.ofEpochDay(selectedDateEpochDay)
-    }
 }

@@ -14,7 +14,7 @@ android {
 
     defaultConfig {
         applicationId = "ru.albertabdullin.todooshka"
-        minSdk = 25
+        minSdk = 26
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
@@ -30,7 +30,6 @@ android {
         }
     }
     compileOptions {
-        isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
@@ -41,9 +40,10 @@ android {
 }
 
 dependencies {
-    implementation(libs.androidx.recyclerview)
     ksp(libs.androidx.room.compiler)
-    coreLibraryDesugaring(libs.android.tools.desugar)
+    implementation(libs.androidx.recyclerview)
+    implementation(libs.androidx.viewmodel)
+    implementation(libs.kotlinx.coroutines.android)
     implementation(libs.androidx.activity.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.constraintlayout)
@@ -55,5 +55,4 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
-
 }

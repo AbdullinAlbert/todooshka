@@ -1,8 +1,8 @@
 package ru.albertabdullin.todooshka.presentation.screen.tasks.daily_representation.adapters
 
-import android.graphics.drawable.Drawable
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import ru.albertabdullin.todooshka.databinding.TaskTrackerDailyDateTabBinding
 import ru.albertabdullin.todooshka.domain.date_operations.DailyDateRange
@@ -16,13 +16,15 @@ class RecyclerViewDailyAdapter(
     private val onDateClick: (LocalDate) -> Unit,
 ) : RecyclerView.Adapter<RecyclerViewDailyAdapter.DailyViewHolder>() {
 
+    private var selectedDate = LocalDate.now()
+
     init {
         setHasStableIds(true)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DailyViewHolder {
         val inflater = LayoutInflater.from(parent.context)
-        val binding = TaskTrackerDailyDateTabBinding.inflate(inflater)
+        val binding = TaskTrackerDailyDateTabBinding.inflate(inflater, parent, false)
         return DailyViewHolder(binding = binding)
     }
 
@@ -49,6 +51,10 @@ class RecyclerViewDailyAdapter(
         }
     }
 
+    fun setSelectedDate(newSelectedDate: LocalDate) {
+
+    }
+
     inner class DailyViewHolder(private val binding: TaskTrackerDailyDateTabBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(date: LocalDate) {
@@ -56,7 +62,12 @@ class RecyclerViewDailyAdapter(
             val tabPropertyValues = tabPropertyValuesProvider(date)
             binding.dateTab.text = tabPropertyValues.formattedText
             binding.dateTab.background = tabPropertyValues.background
-            binding.dateTab.setTextColor(tabPropertyValues.textColor)
+            binding.dateTab.setTextColor(
+                ContextCompat.getColor(
+                    binding.root.context,
+                    tabPropertyValues.textColor
+                )
+            )
         }
     }
 

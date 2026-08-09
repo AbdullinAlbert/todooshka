@@ -12,13 +12,14 @@ constraintlayoutVersion = "2.1.4"
 roomRuntimeVersion = "2.8.4"
 viewpager2Version = "1.1.0"
 fragmentVersion = "1.8.9"
-androidDesugarVersion = "2.1.5"
 recyclerviewVersion = "1.4.0"
+lifecycleVersion = "2.11.0"
+coroutines = "1.11.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomRuntimeVersion" }
-androidx-room-compiler = {module = "androidx.room:room-compiler", version.ref = "roomRuntimeVersion" }
+androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomRuntimeVersion" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
@@ -26,13 +27,13 @@ androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version
 material = { group = "com.google.android.material", name = "material", version.ref = "materialVersion" }
 androidx-activity-ktx = { group = "androidx.activity", name = "activity-ktx", version.ref = "activityKtxVersion" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayoutVersion" }
-androidx-viewpager2 = {group = "androidx.viewpager2", name = "viewpager2", version.ref = "viewpager2Version" }
-androidx-fragment = {module = "androidx.fragment:fragment-ktx", version.ref =  "fragmentVersion"}
-android-tools-desugar = {module = "com.android.tools:desugar_jdk_libs", version.ref = "androidDesugarVersion"}
+androidx-viewpager2 = { group = "androidx.viewpager2", name = "viewpager2", version.ref = "viewpager2Version" }
+androidx-fragment = { module = "androidx.fragment:fragment-ktx", version.ref = "fragmentVersion" }
 androidx-recyclerview = { group = "androidx.recyclerview", name = "recyclerview", version.ref = "recyclerviewVersion" }
-
+androidx-viewmodel = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "lifecycleVersion" }
+kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutines" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
-ksp = {id = "com.google.devtools.ksp", version.ref = "ksp-ver"}
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp-ver" }
 

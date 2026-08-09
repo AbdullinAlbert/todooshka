@@ -4,10 +4,11 @@
     android:id="@+id/date_tab"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:padding="12dp"
+    android:padding="8dp"
     android:textSize="12sp"
     android:textStyle="bold"
     android:elevation="4dp"
+    android:layout_marginHorizontal="2dp"
     android:background="@drawable/task_tracker_date_tab_background"
     android:textColor="@color/black"
     tools:text="14.04.1994 (пн)">

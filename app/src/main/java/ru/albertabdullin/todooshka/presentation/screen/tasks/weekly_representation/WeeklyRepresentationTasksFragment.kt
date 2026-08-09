@@ -1,4 +1,4 @@
-package ru.albertabdullin.todooshka.presentation.screen.tasks
+package ru.albertabdullin.todooshka.presentation.screen.tasks.weekly_representation
 
 import androidx.fragment.app.Fragment
 
