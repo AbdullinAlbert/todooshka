@@ -52,7 +52,10 @@ class RecyclerViewDailyAdapter(
     }
 
     fun setSelectedDate(newSelectedDate: LocalDate) {
-
+        val previousSelectedDate = selectedDate
+        notifyItemChanged(dailyDateRange.positionOf(previousSelectedDate))
+        notifyItemChanged(dailyDateRange.positionOf(newSelectedDate))
+        selectedDate = newSelectedDate
     }
 
     inner class DailyViewHolder(private val binding: TaskTrackerDailyDateTabBinding) :

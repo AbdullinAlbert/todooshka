@@ -30,6 +30,7 @@ class TaskContainerViewModel(
             )
 
     fun setSelectedDate(selectedDate: LocalDate) {
+        if (selectedDate.toEpochDay() == selectedDateEpochDay.value) return
         savedStateHandle[SELECTED_DATE_KEY] = selectedDate.toEpochDay()
     }
 
