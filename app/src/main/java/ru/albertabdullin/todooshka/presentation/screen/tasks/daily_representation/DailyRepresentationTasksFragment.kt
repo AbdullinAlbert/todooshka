@@ -7,6 +7,10 @@ import android.view.ViewGroup
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import kotlinx.coroutines.launch
 import ru.albertabdullin.todooshka.R
 import ru.albertabdullin.todooshka.databinding.DailyRepresentationTaskFragmentBinding
 import ru.albertabdullin.todooshka.domain.date_operations.DailyDateRange
@@ -24,7 +28,9 @@ class DailyRepresentationTasksFragment : Fragment() {
     private var tabAdapter: RecyclerViewDailyAdapter? = null
     private lateinit var dailyDateRange: DailyDateRange
 
-    private val taskContainerViewModel: TaskContainerViewModel by viewModels(ownerProducer = { requireParentFragment() })
+    private val taskContainerViewModel: TaskContainerViewModel by viewModels(
+        ownerProducer = { requireParentFragment() }
+    )
 
     private val dateTimeFormatter =
         DateTimeFormatter.ofPattern("d MMMM, EEEE", Locale.forLanguageTag("ru-RU"))
@@ -71,6 +77,28 @@ class DailyRepresentationTasksFragment : Fragment() {
             onDateClick = (taskContainerViewModel::setSelectedDate)
         )
         binding.dailyDateTab.adapter = tabAdapter
+        paintSelectedDateTab()
+        collectScrollToDateEvents()
+    }
+
+    private fun paintSelectedDateTab() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                taskContainerViewModel.selectedDate.collect { selectedDate ->
+                    tabAdapter?.setSelectedDate(selectedDate)
+                }
+            }
+        }
+    }
+
+    private fun collectScrollToDateEvents() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                taskContainerViewModel.scrollDateTabEvent.collect { selectedDate ->
+
+                }
+            }
+        }
     }
 
 

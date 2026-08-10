@@ -12,11 +12,17 @@ import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.add
 import androidx.fragment.app.commitNow
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import ru.albertabdullin.todooshka.R
 import ru.albertabdullin.todooshka.databinding.TaskContainerBinding
+import ru.albertabdullin.todooshka.domain.repository.TaskRepository
 import ru.albertabdullin.todooshka.presentation.screen.tasks.daily_representation.DailyRepresentationTasksFragment
+import ru.albertabdullin.todooshka.presentation.screen.tasks.viewmodel.TaskContainerViewModel
 import ru.albertabdullin.todooshka.presentation.screen.tasks.weekly_representation.WeeklyRepresentationTasksFragment
+import java.time.LocalDate
 
 class TaskContainerFragment : Fragment() {
 
@@ -37,6 +43,18 @@ class TaskContainerFragment : Fragment() {
 
     private val binding get() = _binding!!
 
+    private val taskContainerViewModel: TaskContainerViewModel by viewModels {
+        TaskContainerViewModel.factory(
+            taskRepository = object : TaskRepository {
+                override suspend fun getDateLeftBound(): Flow<LocalDate> = flowOf(LocalDate.now())
+            }
+        )
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        taskContainerViewModel
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
