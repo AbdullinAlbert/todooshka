@@ -19,9 +19,9 @@ import kotlinx.coroutines.flow.flowOf
 import ru.albertabdullin.todooshka.R
 import ru.albertabdullin.todooshka.databinding.TaskContainerBinding
 import ru.albertabdullin.todooshka.domain.repository.TaskRepository
-import ru.albertabdullin.todooshka.presentation.screen.tasks.daily_representation.DailyRepresentationTasksFragment
+import ru.albertabdullin.todooshka.presentation.screen.tasks.task_representations.daily_representation.DailyRepresentationTasksFragment
 import ru.albertabdullin.todooshka.presentation.screen.tasks.viewmodel.TaskContainerViewModel
-import ru.albertabdullin.todooshka.presentation.screen.tasks.weekly_representation.WeeklyRepresentationTasksFragment
+import ru.albertabdullin.todooshka.presentation.screen.tasks.task_representations.weekly_representation.WeeklyRepresentationTasksFragment
 import java.time.LocalDate
 
 class TaskContainerFragment : Fragment() {

@@ -1,4 +1,4 @@
-package ru.albertabdullin.todooshka.presentation.screen.tasks.daily_representation.adapters
+package ru.albertabdullin.todooshka.presentation.screen.tasks.task_representations.daily_representation.adapters
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
