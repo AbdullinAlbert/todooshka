@@ -22,6 +22,8 @@ class RecyclerViewDailyAdapter(
         setHasStableIds(true)
     }
 
+    data object SelectionChanged
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DailyViewHolder {
         val inflater = LayoutInflater.from(parent.context)
         val binding = TaskTrackerDailyDateTabBinding.inflate(inflater, parent, false)
@@ -29,7 +31,7 @@ class RecyclerViewDailyAdapter(
     }
 
     override fun onBindViewHolder(holder: DailyViewHolder, position: Int) {
-        holder.bind(dailyDateRange.dateAt(position))
+        holder.fullBind(dailyDateRange.dateAt(position))
     }
 
     override fun getItemId(position: Int): Long {
@@ -51,27 +53,38 @@ class RecyclerViewDailyAdapter(
         }
     }
 
-    fun setSelectedDate(newSelectedDate: LocalDate) {
-        val previousSelectedDate = selectedDate
-        notifyItemChanged(dailyDateRange.positionOf(previousSelectedDate))
-        notifyItemChanged(dailyDateRange.positionOf(newSelectedDate))
-        selectedDate = newSelectedDate
-    }
 
-    inner class DailyViewHolder(private val binding: TaskTrackerDailyDateTabBinding) :
+    inner class DailyViewHolder(val binding: TaskTrackerDailyDateTabBinding) :
         RecyclerView.ViewHolder(binding.root) {
-        fun bind(date: LocalDate) {
+        fun fullBind(date: LocalDate) {
             binding.dateTab.setOnClickListener { onDateClick(date) }
             val tabPropertyValues = tabPropertyValuesProvider(date)
             binding.dateTab.text = tabPropertyValues.formattedText
             binding.dateTab.background = tabPropertyValues.background
             binding.dateTab.setTextColor(
                 ContextCompat.getColor(
-                    binding.root.context,
-                    tabPropertyValues.textColor
+                    binding.root.context, tabPropertyValues.textColor
                 )
             )
         }
+
+        fun rebindBackground(date: LocalDate) {
+            val tabPropertyValues = tabPropertyValuesProvider(date)
+            binding.dateTab.background = tabPropertyValues.background
+            binding.dateTab.setTextColor(
+                ContextCompat.getColor(
+                    binding.root.context, tabPropertyValues.textColor
+                )
+            )
+        }
+    }
+
+    override fun onViewAttachedToWindow(holder: DailyViewHolder) {
+        super.onViewAttachedToWindow(holder)
+        val position = holder.bindingAdapterPosition
+        if (position == RecyclerView.NO_POSITION) return
+        val date = dailyDateRange.dateAt(position)
+        holder.rebindBackground(date)
     }
 
 }

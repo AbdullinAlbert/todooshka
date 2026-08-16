@@ -14,14 +14,20 @@ import androidx.fragment.app.add
 import androidx.fragment.app.commitNow
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.launch
 import ru.albertabdullin.todooshka.R
 import ru.albertabdullin.todooshka.databinding.TaskContainerBinding
+import ru.albertabdullin.todooshka.domain.date_operations.LAST_AVAILABLE_DATE
 import ru.albertabdullin.todooshka.domain.repository.TaskRepository
+import ru.albertabdullin.todooshka.presentation.dialog.datepicker.DatePickerFragment
+import ru.albertabdullin.todooshka.presentation.dialog.datepicker.model.AvailableDateRange
 import ru.albertabdullin.todooshka.presentation.screen.tasks.task_representations.daily_representation.DailyRepresentationTasksFragment
-import ru.albertabdullin.todooshka.presentation.screen.tasks.viewmodel.TaskContainerViewModel
 import ru.albertabdullin.todooshka.presentation.screen.tasks.task_representations.weekly_representation.WeeklyRepresentationTasksFragment
+import ru.albertabdullin.todooshka.presentation.screen.tasks.viewmodel.TaskContainerViewModel
 import java.time.LocalDate
 
 class TaskContainerFragment : Fragment() {
@@ -72,6 +78,35 @@ class TaskContainerFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         initToolbar()
         initTasksRepresentation(savedInstanceState)
+        listenFragmentResult()
+        collectOpenCalendarDialogEvents()
+    }
+
+    private fun collectOpenCalendarDialogEvents() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                taskContainerViewModel.openCalendarEvent
+                    .collect { datePickerArgs ->
+                        DatePickerFragment.newInstance(
+                            availableDateRange = AvailableDateRange(
+                                startEpochDay = datePickerArgs.firstDate,
+                                endEpochDay = LAST_AVAILABLE_DATE.toEpochDay()
+                            ),
+                            selectedDateEpochDay = datePickerArgs.selectedDate
+                        ).show(childFragmentManager, "")
+                    }
+            }
+        }
+    }
+
+    private fun listenFragmentResult() {
+        childFragmentManager.setFragmentResultListener(
+            DatePickerFragment.SELECTED_DATE_REQUEST_KEY,
+            this
+        ) { _, bundle ->
+            val selectedEpochDay = bundle.getLong(DatePickerFragment.SELECTED_DATE_ARG_KEY)
+            taskContainerViewModel.onNewDateIsSelected(LocalDate.ofEpochDay(selectedEpochDay))
+        }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -112,6 +147,7 @@ class TaskContainerFragment : Fragment() {
                 override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
                     when (menuItem.itemId) {
                         R.id.task_tracker_select_date_menu_item -> {
+                            taskContainerViewModel.openCalendarDialogButtonIsClicked()
                             return true
                         }
 

@@ -14,7 +14,9 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import ru.albertabdullin.todooshka.domain.repository.TaskRepository
+import ru.albertabdullin.todooshka.presentation.screen.tasks.value_object.DatePickerArgs
 import java.time.LocalDate
 
 
@@ -22,6 +24,18 @@ class TaskContainerViewModel(
     private val taskRepository: TaskRepository,
     private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
+
+    private var firstDate = LocalDate.now()
+
+    init {
+        viewModelScope.launch {
+            taskRepository
+                .getDateLeftBound()
+                .collect { firstDateBound ->
+                    firstDate = firstDateBound
+                }
+        }
+    }
 
     private val selectedDateEpochDay = savedStateHandle.getStateFlow(
         key = SELECTED_DATE_KEY,
@@ -47,7 +61,15 @@ class TaskContainerViewModel(
 
     val scrollDateTabEvent: SharedFlow<LocalDate> = _scrollDateTabEvent
 
-    fun setSelectedDate(selectedDate: LocalDate) {
+    private val _openCalendarEvent = MutableSharedFlow<DatePickerArgs>(
+        replay = 0,
+        extraBufferCapacity = 1,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST
+    )
+
+    val openCalendarEvent: SharedFlow<DatePickerArgs> = _openCalendarEvent
+
+    fun onNewDateIsSelected(selectedDate: LocalDate) {
         if (selectedDate.toEpochDay() == selectedDateEpochDay.value) return
         savedStateHandle[SELECTED_DATE_KEY] = selectedDate.toEpochDay()
         _scrollDateTabEvent.tryEmit(selectedDate)
@@ -55,6 +77,15 @@ class TaskContainerViewModel(
 
     fun isSelectedDate(localDate: LocalDate): Boolean {
         return localDate.isEqual(LocalDate.ofEpochDay(selectedDateEpochDay.value))
+    }
+
+    fun openCalendarDialogButtonIsClicked() {
+        _openCalendarEvent.tryEmit(
+            DatePickerArgs(
+                firstDate = firstDate.toEpochDay(),
+                selectedDate = selectedDateEpochDay.value
+            )
+        )
     }
 
     companion object {
