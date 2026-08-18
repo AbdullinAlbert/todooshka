@@ -10,13 +10,10 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import ru.albertabdullin.todooshka.domain.repository.TaskRepository
 import ru.albertabdullin.todooshka.presentation.screen.tasks.value_object.DatePickerArgs
+import ru.albertabdullin.todooshka.presentation.screen.tasks.value_object.DateSelectionChangedArgs
 import java.time.LocalDate
 
 
@@ -42,24 +39,13 @@ class TaskContainerViewModel(
         initialValue = LocalDate.now().toEpochDay()
     )
 
-    val selectedDate: StateFlow<LocalDate> =
-        selectedDateEpochDay
-            .map(LocalDate::ofEpochDay)
-            .stateIn(
-                scope = viewModelScope,
-                started = SharingStarted.Eagerly,
-                initialValue = LocalDate.ofEpochDay(
-                    selectedDateEpochDay.value
-                )
-            )
-
-    private val _scrollDateTabEvent = MutableSharedFlow<LocalDate>(
+    private val _scrollDateTabEvent = MutableSharedFlow<DateSelectionChangedArgs>(
         replay = 0,
         extraBufferCapacity = 1,
         onBufferOverflow = BufferOverflow.DROP_OLDEST
     )
 
-    val scrollDateTabEvent: SharedFlow<LocalDate> = _scrollDateTabEvent
+    val scrollDateTabEvent: SharedFlow<DateSelectionChangedArgs> = _scrollDateTabEvent
 
     private val _openCalendarEvent = MutableSharedFlow<DatePickerArgs>(
         replay = 0,
@@ -69,10 +55,34 @@ class TaskContainerViewModel(
 
     val openCalendarEvent: SharedFlow<DatePickerArgs> = _openCalendarEvent
 
-    fun onNewDateIsSelected(selectedDate: LocalDate) {
-        if (selectedDate.toEpochDay() == selectedDateEpochDay.value) return
-        savedStateHandle[SELECTED_DATE_KEY] = selectedDate.toEpochDay()
-        _scrollDateTabEvent.tryEmit(selectedDate)
+    fun onNewDateIsSelectedFromTabs(selectedDate: LocalDate) {
+        val (previous, current) = updateSelectedDate(selectedDate) ?: return
+        _scrollDateTabEvent.tryEmit(
+            DateSelectionChangedArgs(
+                previous,
+                current,
+                DateSelectionChangedArgs.SelectionDateSource.DATE_TAB
+            )
+        )
+    }
+
+    fun onNewDateIsSelectedFromCalendar(selectedDate: LocalDate) {
+        val (previous, current) = updateSelectedDate(selectedDate) ?: return
+        _scrollDateTabEvent.tryEmit(
+            DateSelectionChangedArgs(
+                previous,
+                current,
+                DateSelectionChangedArgs.SelectionDateSource.CALENDAR
+            )
+        )
+    }
+
+    private fun updateSelectedDate(selectedDate: LocalDate): Pair<Long, Long>? {
+        if (selectedDate.toEpochDay() == selectedDateEpochDay.value) return null
+        val previousSelectedDayEpoch = selectedDateEpochDay.value
+        val currentSelectedDayEpoch = selectedDate.toEpochDay()
+        savedStateHandle[SELECTED_DATE_KEY] = currentSelectedDayEpoch
+        return Pair(previousSelectedDayEpoch, currentSelectedDayEpoch)
     }
 
     fun isSelectedDate(localDate: LocalDate): Boolean {
@@ -92,7 +102,7 @@ class TaskContainerViewModel(
         private const val SELECTED_DATE_KEY = "SELECTED_DATE_KEY"
 
         fun factory(
-            taskRepository: TaskRepository
+            taskRepository: TaskRepository,
         ): ViewModelProvider.Factory = viewModelFactory {
             initializer {
                 TaskContainerViewModel(

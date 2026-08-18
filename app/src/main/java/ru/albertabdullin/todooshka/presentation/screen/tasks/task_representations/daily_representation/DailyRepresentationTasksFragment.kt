@@ -1,7 +1,6 @@
 package ru.albertabdullin.todooshka.presentation.screen.tasks.task_representations.daily_representation
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -30,7 +29,8 @@ class DailyRepresentationTasksFragment : Fragment() {
     private var _binding: DailyRepresentationTaskFragmentBinding? = null
     private val binding get() = _binding!!
     private var tabAdapter: RecyclerViewDailyAdapter? = null
-    private lateinit var dailyDateRange: DailyDateRange
+    private val dailyDateRange =
+        DailyDateRange(firstDate = LocalDate.now(), lastDate = LAST_AVAILABLE_DATE)
 
     private val taskContainerViewModel: TaskContainerViewModel by viewModels(
         ownerProducer = { requireParentFragment() })
@@ -47,12 +47,9 @@ class DailyRepresentationTasksFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        dailyDateRange = DailyDateRange(firstDate = LocalDate.now(), lastDate = LAST_AVAILABLE_DATE)
         tabAdapter = RecyclerViewDailyAdapter(
-            dailyDateRange = dailyDateRange, tabPropertyValuesProvider = { date ->
-                if (date.dayOfMonth > 26) {
-                    Log.d(DailyRepresentationTasksFragment::class.simpleName, "localDate = $date")
-                }
+            dailyDateRange = dailyDateRange,
+            tabPropertyValuesProvider = { date ->
                 var background: Int
                 var textColor: Int
                 when {
@@ -76,7 +73,7 @@ class DailyRepresentationTasksFragment : Fragment() {
                     background = ResourcesCompat.getDrawable(resources, background, null)!!,
                     textColor = textColor
                 )
-            }, onDateClick = (taskContainerViewModel::onNewDateIsSelected)
+            }, onDateClick = (taskContainerViewModel::onNewDateIsSelectedFromTabs)
         )
         binding.dailyDateTab.adapter = tabAdapter
         collectScrollToDateEvents()
@@ -85,39 +82,44 @@ class DailyRepresentationTasksFragment : Fragment() {
     private fun collectScrollToDateEvents() {
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.RESUMED) {
-                taskContainerViewModel.scrollDateTabEvent.collect { selectedDate ->
-                    if (!this@DailyRepresentationTasksFragment::dailyDateRange.isInitialized) return@collect
-                    val targetPos = dailyDateRange.positionOf(selectedDate)
+                taskContainerViewModel.scrollDateTabEvent.collect { dateSelectionChangedArs ->
                     val layoutManager =
                         binding.dailyDateTab.layoutManager as? LinearLayoutManager ?: return@collect
-                    val targetView = layoutManager.findViewByPosition(targetPos)
+                    val previousSelectedPos =
+                        dailyDateRange.positionOf(LocalDate.ofEpochDay(dateSelectionChangedArs.previousSelectedDayEpoch))
+                    val currentSelectedPos =
+                        dailyDateRange.positionOf(LocalDate.ofEpochDay(dateSelectionChangedArs.currentSelectedDayEpoch))
+                    val targetView = layoutManager.findViewByPosition(currentSelectedPos)
                     if (targetView == null) {
-                        testInstantScroll(targetPos - 1, targetPos)
+                        instantScroll(previousSelectedPos, currentSelectedPos)
                     } else {
-                        smoothScrollToDateTab(targetPos)
+                        tabAdapter!!.updateSelected(previousSelectedPos, currentSelectedPos)
+                        smoothScrollToDateTab(currentSelectedPos)
                     }
                 }
             }
         }
     }
 
-    private fun smoothScrollToDateTab(position: Int) {
+    private fun smoothScrollToDateTab(currentPos: Int) {
+        if (tabAdapter == null) return
         val layoutManager = binding.dailyDateTab.layoutManager as? LinearLayoutManager ?: return
         layoutManager.startSmoothScroll(CenteredDateTabSmoothScroller(requireContext()).apply {
-            targetPosition = position
+            targetPosition = currentPos
         })
     }
 
 
-    private fun testInstantScroll(aroundPos: Int, targetPos: Int) {
+    private fun instantScroll(previousPos: Int, currentPos: Int) {
         val rv = binding.dailyDateTab
         val layoutManager = rv.layoutManager as? LinearLayoutManager ?: return
         rv.visibility = View.INVISIBLE
         rv.post {
             rv.doOnNextLayout {
                 rv.visibility = View.VISIBLE
-                smoothScrollToDateTab(targetPos)
+                smoothScrollToDateTab(currentPos)
             }
+            val aroundPos = if (previousPos < currentPos) currentPos - 1 else currentPos + 1
             layoutManager.scrollToPosition(aroundPos)
         }
     }

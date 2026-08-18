@@ -16,13 +16,11 @@ class RecyclerViewDailyAdapter(
     private val onDateClick: (LocalDate) -> Unit,
 ) : RecyclerView.Adapter<RecyclerViewDailyAdapter.DailyViewHolder>() {
 
-    private var selectedDate = LocalDate.now()
-
     init {
         setHasStableIds(true)
     }
 
-    data object SelectionChanged
+    private data object SelectionChanged
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DailyViewHolder {
         val inflater = LayoutInflater.from(parent.context)
@@ -32,6 +30,18 @@ class RecyclerViewDailyAdapter(
 
     override fun onBindViewHolder(holder: DailyViewHolder, position: Int) {
         holder.fullBind(dailyDateRange.dateAt(position))
+    }
+
+    override fun onBindViewHolder(holder: DailyViewHolder, position: Int, payloads: List<Any?>) {
+        super.onBindViewHolder(holder, position, payloads)
+        if (payloads.any { it == SelectionChanged }) {
+            holder.updateColors(dailyDateRange.dateAt(position))
+        }
+    }
+
+    fun updateSelected(previousPos: Int, currentPos: Int) {
+        notifyItemChanged(previousPos, SelectionChanged)
+        notifyItemChanged(currentPos, SelectionChanged)
     }
 
     override fun getItemId(position: Int): Long {
@@ -68,7 +78,7 @@ class RecyclerViewDailyAdapter(
             )
         }
 
-        fun rebindBackground(date: LocalDate) {
+        fun updateColors(date: LocalDate) {
             val tabPropertyValues = tabPropertyValuesProvider(date)
             binding.dateTab.background = tabPropertyValues.background
             binding.dateTab.setTextColor(
@@ -84,7 +94,7 @@ class RecyclerViewDailyAdapter(
         val position = holder.bindingAdapterPosition
         if (position == RecyclerView.NO_POSITION) return
         val date = dailyDateRange.dateAt(position)
-        holder.rebindBackground(date)
+        holder.updateColors(date)
     }
 
 }

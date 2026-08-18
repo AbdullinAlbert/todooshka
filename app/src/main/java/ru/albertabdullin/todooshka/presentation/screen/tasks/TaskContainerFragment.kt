@@ -105,7 +105,11 @@ class TaskContainerFragment : Fragment() {
             this
         ) { _, bundle ->
             val selectedEpochDay = bundle.getLong(DatePickerFragment.SELECTED_DATE_ARG_KEY)
-            taskContainerViewModel.onNewDateIsSelected(LocalDate.ofEpochDay(selectedEpochDay))
+            taskContainerViewModel.onNewDateIsSelectedFromCalendar(
+                LocalDate.ofEpochDay(
+                    selectedEpochDay
+                )
+            )
         }
     }
 
