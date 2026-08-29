@@ -10,9 +10,9 @@
         <item name="colorOnSecondaryContainer">@color/on_primary</item>>
         <item name="colorPrimaryContainer">@color/colorPrimaryContainer</item>
 
-        <item name="toolbarStyle">
+<!--        <item name="toolbarStyle">
             @style/Widget.Todooshka.Toolbar
-        </item>
+        </item> -->
     </style>
 
     <style name="Theme.Todooshka" parent="Base.Theme.Todooshka" />
@@ -22,6 +22,11 @@
         <item name="materialCalendarStyle">
             @style/Widget.Todooshka.MaterialCalendar
         </item>
+
+        <item name="colorSurface">@android:color/white</item>
+        <item name="colorOnSurface">@color/black</item>
+
+        <item name="elevationOverlayEnabled">false</item>
 
         <item name="buttonBarPositiveButtonStyle">
             @style/Widget.Todooshka.DatePicker.Button
@@ -70,7 +75,7 @@
 
     <style name="Widget.Todooshka.Toolbar" parent="Widget.MaterialComponents.Toolbar.Primary">
 
-        <item name="android:background">@color/colorPrimaryContainer</item>
+        <item name="android:background">@color/primary</item>
         <item name="titleTextColor">?attr/colorOnPrimary</item>
         <item name="subtitleTextColor">?attr/colorOnPrimary</item>
         <item name="navigationIconTint">?attr/colorOnPrimary</item>
