@@ -34,10 +34,15 @@ class TaskContainerViewModel(
         }
     }
 
-    private val selectedDateEpochDay = savedStateHandle.getStateFlow(
-        key = SELECTED_DATE_KEY,
-        initialValue = LocalDate.now().toEpochDay()
-    )
+    private val selectedDateEpochDay
+        get(): Long {
+            var selectedDate = savedStateHandle[SELECTED_DATE_KEY] as? Long
+            if (selectedDate == null) {
+                selectedDate = LocalDate.now().toEpochDay()
+                savedStateHandle[SELECTED_DATE_KEY] = selectedDate
+            }
+            return selectedDate
+        }
 
     private val _scrollDateTabEvent = MutableSharedFlow<DateSelectionChangedArgs>(
         replay = 0,
@@ -78,22 +83,22 @@ class TaskContainerViewModel(
     }
 
     private fun updateSelectedDate(selectedDate: LocalDate): Pair<Long, Long>? {
-        if (selectedDate.toEpochDay() == selectedDateEpochDay.value) return null
-        val previousSelectedDayEpoch = selectedDateEpochDay.value
+        if (selectedDate.toEpochDay() == selectedDateEpochDay) return null
+        val previousSelectedDayEpoch = selectedDateEpochDay
         val currentSelectedDayEpoch = selectedDate.toEpochDay()
         savedStateHandle[SELECTED_DATE_KEY] = currentSelectedDayEpoch
         return Pair(previousSelectedDayEpoch, currentSelectedDayEpoch)
     }
 
     fun isSelectedDate(localDate: LocalDate): Boolean {
-        return localDate.isEqual(LocalDate.ofEpochDay(selectedDateEpochDay.value))
+        return localDate.isEqual(LocalDate.ofEpochDay(selectedDateEpochDay))
     }
 
     fun openCalendarDialogButtonIsClicked() {
         _openCalendarEvent.tryEmit(
             DatePickerArgs(
-                firstDate = firstDate.toEpochDay(),
-                selectedDate = selectedDateEpochDay.value
+                firstDate = firstDate,
+                selectedDate = LocalDate.ofEpochDay(selectedDateEpochDay)
             )
         )
     }

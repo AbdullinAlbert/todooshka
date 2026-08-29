@@ -1,6 +1,8 @@
 package ru.albertabdullin.todooshka.presentation.dialog.datepicker.model
 
+import java.time.LocalDate
+
 data class AvailableDateRange(
-    val startEpochDay: Long,
-    val endEpochDay: Long
+    val startDate: LocalDate,
+    val endDate: LocalDate
 )

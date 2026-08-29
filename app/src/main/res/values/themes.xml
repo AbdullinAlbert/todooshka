@@ -1,9 +1,78 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
+<resources>
     <!-- Base application theme. -->
     <style name="Base.Theme.Todooshka" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorOnPrimary">@color/on_primary</item>
+        <item name="colorSurface">@color/colorPrimaryContainer</item>
+        <item name="colorOnSurface">@color/on_primary</item>
+        <item name="colorSecondaryContainer">@color/primary</item>>
+        <item name="colorOnSecondaryContainer">@color/on_primary</item>>
+        <item name="colorPrimaryContainer">@color/colorPrimaryContainer</item>
+
+        <item name="toolbarStyle">
+            @style/Widget.Todooshka.Toolbar
+        </item>
     </style>
 
     <style name="Theme.Todooshka" parent="Base.Theme.Todooshka" />
+
+    <style name="ThemeOverlay.Todooshka.DatePicker" parent="ThemeOverlay.MaterialComponents.MaterialCalendar">
+
+        <item name="materialCalendarStyle">
+            @style/Widget.Todooshka.MaterialCalendar
+        </item>
+
+        <item name="buttonBarPositiveButtonStyle">
+            @style/Widget.Todooshka.DatePicker.Button
+        </item>
+
+        <item name="buttonBarNegativeButtonStyle">
+            @style/Widget.Todooshka.DatePicker.Button
+        </item>
+    </style>
+
+    <style name="Widget.Todooshka.MaterialCalendar" parent="Widget.MaterialComponents.MaterialCalendar">
+
+        <item name="dayStyle">
+            @style/Widget.Todooshka.MaterialCalendar.Day
+        </item>
+
+        <item name="dayTodayStyle">
+            @style/Widget.Todooshka.MaterialCalendar.Day.Today
+        </item>
+
+        <item name="daySelectedStyle">
+            @style/Widget.Todooshka.MaterialCalendar.Day.Selected
+        </item>
+    </style>
+
+    <style name="Widget.Todooshka.MaterialCalendar.Day" parent="Widget.MaterialComponents.MaterialCalendar.Day" />
+
+    <style name="Widget.Todooshka.MaterialCalendar.Day.Today" parent="Widget.MaterialComponents.MaterialCalendar.Day.Today">
+
+        <item name="itemFillColor">@color/task_tracker_today_date_tab_background</item>
+        <item name="itemTextColor">@color/task_tracker_today_date_tab_text_color</item>
+        <item name="itemStrokeWidth">0dp</item>
+    </style>
+
+    <style name="Widget.Todooshka.MaterialCalendar.Day.Selected" parent="Widget.MaterialComponents.MaterialCalendar.Day.Selected">
+
+        <item name="itemFillColor">@color/task_tracker_selected_date_tab_background</item>
+        <item name="itemTextColor">@color/task_tracker_selected_date_tab_text_color</item>
+        <item name="itemStrokeWidth">0dp</item>
+    </style>
+
+    <style name="Widget.Todooshka.DatePicker.Button" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
+
+        <item name="android:textColor">@color/task_tracker_selected_date_tab_text_color</item>
+    </style>
+
+    <style name="Widget.Todooshka.Toolbar" parent="Widget.MaterialComponents.Toolbar.Primary">
+
+        <item name="android:background">@color/colorPrimaryContainer</item>
+        <item name="titleTextColor">?attr/colorOnPrimary</item>
+        <item name="subtitleTextColor">?attr/colorOnPrimary</item>
+        <item name="navigationIconTint">?attr/colorOnPrimary</item>
+    </style>
 </resources>

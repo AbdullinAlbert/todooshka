@@ -83,6 +83,7 @@ class DailyRepresentationTasksFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.RESUMED) {
                 taskContainerViewModel.scrollDateTabEvent.collect { dateSelectionChangedArs ->
+                    if (tabAdapter == null) return@collect
                     val layoutManager =
                         binding.dailyDateTab.layoutManager as? LinearLayoutManager ?: return@collect
                     val previousSelectedPos =

@@ -23,12 +23,14 @@ import ru.albertabdullin.todooshka.R
 import ru.albertabdullin.todooshka.databinding.TaskContainerBinding
 import ru.albertabdullin.todooshka.domain.date_operations.LAST_AVAILABLE_DATE
 import ru.albertabdullin.todooshka.domain.repository.TaskRepository
-import ru.albertabdullin.todooshka.presentation.dialog.datepicker.DatePickerFragment
+import ru.albertabdullin.todooshka.presentation.dialog.datepicker.DatePickerFactory
 import ru.albertabdullin.todooshka.presentation.dialog.datepicker.model.AvailableDateRange
 import ru.albertabdullin.todooshka.presentation.screen.tasks.task_representations.daily_representation.DailyRepresentationTasksFragment
 import ru.albertabdullin.todooshka.presentation.screen.tasks.task_representations.weekly_representation.WeeklyRepresentationTasksFragment
 import ru.albertabdullin.todooshka.presentation.screen.tasks.viewmodel.TaskContainerViewModel
+import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneOffset
 
 class TaskContainerFragment : Fragment() {
 
@@ -78,7 +80,6 @@ class TaskContainerFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         initToolbar()
         initTasksRepresentation(savedInstanceState)
-        listenFragmentResult()
         collectOpenCalendarDialogEvents()
     }
 
@@ -87,29 +88,24 @@ class TaskContainerFragment : Fragment() {
             repeatOnLifecycle(Lifecycle.State.RESUMED) {
                 taskContainerViewModel.openCalendarEvent
                     .collect { datePickerArgs ->
-                        DatePickerFragment.newInstance(
+                        val datePicker = DatePickerFactory.create(
+                            selectedDate = datePickerArgs.selectedDate,
                             availableDateRange = AvailableDateRange(
-                                startEpochDay = datePickerArgs.firstDate,
-                                endEpochDay = LAST_AVAILABLE_DATE.toEpochDay()
-                            ),
-                            selectedDateEpochDay = datePickerArgs.selectedDate
-                        ).show(childFragmentManager, "")
+                                startDate = datePickerArgs.firstDate,
+                                endDate = LAST_AVAILABLE_DATE
+                            )
+                        )
+                        datePicker.addOnPositiveButtonClickListener { selectedDateMillis ->
+                            val selectedDate = Instant
+                                .ofEpochMilli(selectedDateMillis)
+                                .atZone(ZoneOffset.UTC)
+                                .toLocalDate()
+
+                            taskContainerViewModel.onNewDateIsSelectedFromCalendar(selectedDate)
+                        }
+                        datePicker.show(childFragmentManager, "")
                     }
             }
-        }
-    }
-
-    private fun listenFragmentResult() {
-        childFragmentManager.setFragmentResultListener(
-            DatePickerFragment.SELECTED_DATE_REQUEST_KEY,
-            this
-        ) { _, bundle ->
-            val selectedEpochDay = bundle.getLong(DatePickerFragment.SELECTED_DATE_ARG_KEY)
-            taskContainerViewModel.onNewDateIsSelectedFromCalendar(
-                LocalDate.ofEpochDay(
-                    selectedEpochDay
-                )
-            )
         }
     }
 
