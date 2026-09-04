@@ -50,7 +50,7 @@ class TaskContainerViewModel(
         onBufferOverflow = BufferOverflow.DROP_OLDEST
     )
 
-    val scrollDateTabEvent: SharedFlow<DateSelectionChangedArgs> = _scrollDateTabEvent
+    val scrollDateEvent: SharedFlow<DateSelectionChangedArgs> = _scrollDateTabEvent
 
     private val _openCalendarEvent = MutableSharedFlow<DatePickerArgs>(
         replay = 0,

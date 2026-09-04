@@ -5,6 +5,15 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/daily_task_representation_view_pager"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/daily_date_tab" />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/daily_date_tab"
         android:layout_width="match_parent"
@@ -18,13 +27,5 @@
         app:layout_constraintTop_toTopOf="parent"
         tools:listitem="@layout/task_tracker_daily_date_tab" />
 
-    <androidx.viewpager2.widget.ViewPager2
-        android:id="@+id/daily_task_representation_view_pager"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/daily_date_tab" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

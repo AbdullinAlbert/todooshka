@@ -1,6 +1,8 @@
 package ru.albertabdullin.todooshka.presentation.screen.main_screen_container
 
+import android.graphics.Color
 import android.os.Bundle
+import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -14,7 +16,16 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+        enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.light(
+                Color.WHITE,
+                Color.WHITE
+            ),
+            navigationBarStyle = SystemBarStyle.light(
+                Color.WHITE,
+                Color.WHITE
+            )
+        )
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
@@ -26,7 +37,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupView() {
-        setSupportActionBar(binding.mainToolbar)
         binding.mainViewPager.apply {
             adapter = MainViewPagerAdapter(this@MainActivity)
             isUserInputEnabled = false

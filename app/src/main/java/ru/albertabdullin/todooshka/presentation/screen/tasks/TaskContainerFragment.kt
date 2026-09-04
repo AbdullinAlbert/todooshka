@@ -7,7 +7,6 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.add
@@ -46,8 +45,6 @@ class TaskContainerFragment : Fragment() {
     }
 
     private var _binding: TaskContainerBinding? = null
-
-    private val actionBar get() = (requireActivity() as AppCompatActivity).supportActionBar
 
     private val binding get() = _binding!!
 
@@ -131,8 +128,8 @@ class TaskContainerFragment : Fragment() {
     }
 
     private fun initToolbar() {
-        requireActivity().addMenuProvider(
-            provider = object : MenuProvider {
+        binding.taskTrackerToolbar.addMenuProvider(
+            object : MenuProvider {
                 override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
                     menuInflater.inflate(R.menu.task_view_representation, menu)
                     val menuItem = menu.findItem(R.id.task_tracker_representation_menu_item)
@@ -159,7 +156,7 @@ class TaskContainerFragment : Fragment() {
                         else -> return false
                     }
                 }
-            }, owner = viewLifecycleOwner, state = Lifecycle.State.RESUMED
+            },
         )
     }
 
@@ -212,14 +209,14 @@ class TaskContainerFragment : Fragment() {
     private fun setupMenuItemForDailyRepresentation(item: MenuItem) {
         item.title = getString(R.string.weekly_task_representation_mode)
         item.setIcon(R.drawable.date_week_24dp)
-        actionBar?.title =
+        binding.taskTrackerToolbar.title =
             getString(R.string.daily_task_tracker)
     }
 
     private fun setupToolbarForWeeklyRepresentation(item: MenuItem) {
         item.title = getString(R.string.daily_task_representation_mode)
         item.setIcon(R.drawable.date_day_24dp)
-        actionBar?.title = getString(R.string.weekly_task_tracker)
+        binding.taskTrackerToolbar.title = getString(R.string.weekly_task_tracker)
     }
 
     private fun dailyRepresentationMenuItemIsClicked(
