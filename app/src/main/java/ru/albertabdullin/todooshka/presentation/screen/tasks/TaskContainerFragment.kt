@@ -98,7 +98,7 @@ class TaskContainerFragment : Fragment() {
                                 .atZone(ZoneOffset.UTC)
                                 .toLocalDate()
 
-                            taskContainerViewModel.onNewDateIsSelectedFromCalendar(selectedDate)
+                            taskContainerViewModel.onNewDateIsSelected(selectedDate)
                         }
                         datePicker.show(childFragmentManager, "")
                     }

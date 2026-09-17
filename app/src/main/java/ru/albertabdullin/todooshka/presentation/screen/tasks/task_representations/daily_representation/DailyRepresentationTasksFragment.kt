@@ -62,7 +62,7 @@ class DailyRepresentationTasksFragment : Fragment() {
             ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
                 super.onPageSelected(position)
-                taskContainerViewModel.onNewDateIsSelectedFromCalendar(
+                taskContainerViewModel.onNewDateIsSelected(
                     dailyDateRange.dateAt(
                         position
                     )
@@ -73,8 +73,7 @@ class DailyRepresentationTasksFragment : Fragment() {
 
     private fun setupTabAdapter() {
         tabAdapter = RecyclerViewDailyAdapter(
-            dailyDateRange = dailyDateRange,
-            tabPropertyValuesProvider = { date ->
+            dailyDateRange = dailyDateRange, tabPropertyValuesProvider = { date ->
                 var background: Int
                 var textColor: Int
                 when {
@@ -98,7 +97,7 @@ class DailyRepresentationTasksFragment : Fragment() {
                     background = ResourcesCompat.getDrawable(resources, background, null)!!,
                     textColor = textColor
                 )
-            }, onDateClick = (taskContainerViewModel::onNewDateIsSelectedFromTabs)
+            }, onDateClick = (taskContainerViewModel::onNewDateIsSelected)
         )
         binding.dailyDateTab.adapter = tabAdapter
     }
@@ -121,19 +120,55 @@ class DailyRepresentationTasksFragment : Fragment() {
 
     private fun scrollEventForTabs(dateSelectionChangedArs: DateSelectionChangedArgs) {
         if (tabAdapter == null) return
-        val layoutManager =
-            binding.dailyDateTab.layoutManager as? LinearLayoutManager ?: return
+        val layoutManager = binding.dailyDateTab.layoutManager as? LinearLayoutManager ?: return
+
         val previousSelectedPos =
-            dailyDateRange.positionOf(LocalDate.ofEpochDay(dateSelectionChangedArs.previousSelectedDayEpoch))
+            dailyDateRange.positionOf(dateSelectionChangedArs.previousSelectedDayEpoch)
         val currentSelectedPos =
-            dailyDateRange.positionOf(LocalDate.ofEpochDay(dateSelectionChangedArs.currentSelectedDayEpoch))
-        val targetView = layoutManager.findViewByPosition(currentSelectedPos)
-        if (targetView == null) {
-            instantScroll(previousSelectedPos, currentSelectedPos)
+            dailyDateRange.positionOf(dateSelectionChangedArs.currentSelectedDayEpoch)
+
+        val previousSelectedTab = layoutManager.findViewByPosition(previousSelectedPos)
+
+        //если предыдущий выбранный таб виден и новый выбранный таб рядом
+        if (previousSelectedTab != null && isNewSelectedTabNear(
+                previousSelectedPos,
+                currentSelectedPos
+            )
+        ) {
+            smoothScroll(previousSelectedPos, currentSelectedPos)
         } else {
-            tabAdapter!!.updateSelected(previousSelectedPos, currentSelectedPos)
-            smoothScrollToDateTab(currentSelectedPos)
+            instantScroll(
+                previousSelectedPos,
+                currentSelectedPos,
+            )
         }
+
+    }
+
+    private fun isNewSelectedTabNear(previousSelectedPos: Int, currentSelectedPos: Int): Boolean {
+        var calculatedWidth = 0
+        val helperView = LayoutInflater.from(requireContext())
+            .inflate(R.layout.task_tracker_daily_date_tab, binding.dailyDateTab, false)
+        for (i in (previousSelectedPos + 1)..currentSelectedPos) {
+            val currentDateText = dailyDateRange.dateAt(i).format(dateTimeFormatter)
+            calculatedWidth += getTabWidth(helperView, currentDateText)
+            if (calculatedWidth > binding.dailyDateTab.width) {
+                return  (i == currentSelectedPos)
+            }
+        }
+        return true
+    }
+
+    private fun getTabWidth(view: View, text: String): Int {
+        return 0
+    }
+
+    private fun smoothScroll(
+        previousPos: Int,
+        currentPos: Int
+    ) {
+        tabAdapter!!.updateSelected(previousPos, currentPos)
+        smoothScrollToDateTab(currentPos)
     }
 
     private fun smoothScrollToDateTab(currentPos: Int) {

@@ -60,24 +60,12 @@ class TaskContainerViewModel(
 
     val openCalendarEvent: SharedFlow<DatePickerArgs> = _openCalendarEvent
 
-    fun onNewDateIsSelectedFromTabs(selectedDate: LocalDate) {
+    fun onNewDateIsSelected(selectedDate: LocalDate) {
         val (previous, current) = updateSelectedDate(selectedDate) ?: return
         _scrollDateTabEvent.tryEmit(
             DateSelectionChangedArgs(
                 previous,
                 current,
-                DateSelectionChangedArgs.SelectionDateSource.DATE_TAB
-            )
-        )
-    }
-
-    fun onNewDateIsSelectedFromCalendar(selectedDate: LocalDate) {
-        val (previous, current) = updateSelectedDate(selectedDate) ?: return
-        _scrollDateTabEvent.tryEmit(
-            DateSelectionChangedArgs(
-                previous,
-                current,
-                DateSelectionChangedArgs.SelectionDateSource.CALENDAR
             )
         )
     }

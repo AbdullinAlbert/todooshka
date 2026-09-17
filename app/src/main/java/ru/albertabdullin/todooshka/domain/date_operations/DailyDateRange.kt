@@ -15,6 +15,11 @@ class DailyDateRange(private var firstDate: LocalDate, private val lastDate: Loc
         return ChronoUnit.DAYS.between(firstDate, date).toInt()
     }
 
+    fun positionOf(dateEpoch: Long): Int {
+        val date = LocalDate.ofEpochDay(dateEpoch)
+        return ChronoUnit.DAYS.between(firstDate, date).toInt()
+    }
+
 
     fun updateFirstDate(newDate: LocalDate): DateRangeChange {
         require(newDate.isBefore(lastDate))
