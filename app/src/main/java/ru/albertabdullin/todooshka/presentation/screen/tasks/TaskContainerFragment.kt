@@ -134,7 +134,7 @@ class TaskContainerFragment : Fragment() {
                     menuInflater.inflate(R.menu.task_view_representation, menu)
                     val menuItem = menu.findItem(R.id.task_tracker_representation_menu_item)
                     if (representationTaskTrackerMode == RepresentationTaskTrackerMode.Daily) {
-                        setupMenuItemForDailyRepresentation(menuItem)
+                        setupToolbarForDailyRepresentation(menuItem)
                     } else {
                         setupToolbarForWeeklyRepresentation(menuItem)
                     }
@@ -189,7 +189,7 @@ class TaskContainerFragment : Fragment() {
         dailyFragment: Fragment,
         weeklyFragment: Fragment
     ) {
-        setupMenuItemForDailyRepresentation(item)
+        setupToolbarForDailyRepresentation(item)
         representationTaskTrackerMode = RepresentationTaskTrackerMode.Daily
         childFragmentManager.commitNow {
             setReorderingAllowed(true)
@@ -206,7 +206,7 @@ class TaskContainerFragment : Fragment() {
         }
     }
 
-    private fun setupMenuItemForDailyRepresentation(item: MenuItem) {
+    private fun setupToolbarForDailyRepresentation(item: MenuItem) {
         item.title = getString(R.string.weekly_task_representation_mode)
         item.setIcon(R.drawable.date_week_24dp)
         binding.taskTrackerToolbar.title =

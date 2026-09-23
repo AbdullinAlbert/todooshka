@@ -9,5 +9,5 @@
     <item
         android:id="@+id/task_tracker_representation_menu_item"
         android:title=""
-        app:showAsAction="ifRoom" />
+        app:showAsAction="always" />
 </menu>

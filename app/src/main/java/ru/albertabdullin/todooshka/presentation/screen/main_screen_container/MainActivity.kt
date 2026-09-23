@@ -1,5 +1,6 @@
 package ru.albertabdullin.todooshka.presentation.screen.main_screen_container
 
+import android.content.res.Configuration.ORIENTATION_LANDSCAPE
 import android.graphics.Color
 import android.os.Bundle
 import androidx.activity.SystemBarStyle
@@ -30,7 +31,13 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, 0, 0)
+            var right = 0
+            var bottom = 0
+            if (resources.configuration.orientation == ORIENTATION_LANDSCAPE) {
+                right = systemBars.right
+                bottom = systemBars.bottom
+            }
+            v.setPadding(systemBars.left, systemBars.top, right, bottom)
             insets
         }
         setupView()

@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.doOnNextLayout
 import androidx.fragment.app.Fragment
@@ -99,7 +100,7 @@ class DailyRepresentationTasksFragment : Fragment() {
                 )
             }, onDateClick = (taskContainerViewModel::onNewDateIsSelected)
         )
-        binding.dailyDateTab.adapter = tabAdapter
+        binding.dailyDateTabList.adapter = tabAdapter
     }
 
     private fun collectScrollToDateEvents() {
@@ -120,7 +121,7 @@ class DailyRepresentationTasksFragment : Fragment() {
 
     private fun scrollEventForTabs(dateSelectionChangedArs: DateSelectionChangedArgs) {
         if (tabAdapter == null) return
-        val layoutManager = binding.dailyDateTab.layoutManager as? LinearLayoutManager ?: return
+        val layoutManager = binding.dailyDateTabList.layoutManager as? LinearLayoutManager ?: return
 
         val previousSelectedPos =
             dailyDateRange.positionOf(dateSelectionChangedArs.previousSelectedDayEpoch)
@@ -128,13 +129,12 @@ class DailyRepresentationTasksFragment : Fragment() {
             dailyDateRange.positionOf(dateSelectionChangedArs.currentSelectedDayEpoch)
 
         val previousSelectedTab = layoutManager.findViewByPosition(previousSelectedPos)
-
+        val currentSelectedTab = layoutManager.findViewByPosition(currentSelectedPos)
         //если предыдущий выбранный таб виден и новый выбранный таб рядом
-        if (previousSelectedTab != null && isNewSelectedTabNear(
-                previousSelectedPos,
-                currentSelectedPos
-            )
-        ) {
+        val res = isNewSelectedTabNear(
+            previousSelectedPos, currentSelectedPos
+        )
+        if ((previousSelectedTab != null && res) || currentSelectedTab != null) {
             smoothScroll(previousSelectedPos, currentSelectedPos)
         } else {
             instantScroll(
@@ -148,24 +148,47 @@ class DailyRepresentationTasksFragment : Fragment() {
     private fun isNewSelectedTabNear(previousSelectedPos: Int, currentSelectedPos: Int): Boolean {
         var calculatedWidth = 0
         val helperView = LayoutInflater.from(requireContext())
-            .inflate(R.layout.task_tracker_daily_date_tab, binding.dailyDateTab, false)
-        for (i in (previousSelectedPos + 1)..currentSelectedPos) {
+            .inflate(R.layout.task_tracker_daily_date_tab, binding.dailyDateTabList, false)
+
+        fun helperCalculation(i: Int): Boolean {
             val currentDateText = dailyDateRange.dateAt(i).format(dateTimeFormatter)
             calculatedWidth += getTabWidth(helperView, currentDateText)
-            if (calculatedWidth > binding.dailyDateTab.width) {
-                return  (i == currentSelectedPos)
+            if (calculatedWidth > binding.dailyDateTabList.width) {
+                return false
             }
+            return true
         }
-        return true
+
+        if (previousSelectedPos < currentSelectedPos) {
+            for (i in (previousSelectedPos + 1)..currentSelectedPos) {
+                val calculationResult = helperCalculation(i)
+                if (!calculationResult) return false
+            }
+            return true
+        } else {
+            for (i in (previousSelectedPos - 1) downTo currentSelectedPos) {
+                val calculationResult = helperCalculation(i)
+                if (!calculationResult) return false
+            }
+            return true
+        }
+
     }
 
     private fun getTabWidth(view: View, text: String): Int {
-        return 0
+        view.findViewById<TextView>(R.id.date_tab).text = text
+        val widthMeasureSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
+        val heightMeasureSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
+        view.measure(
+            widthMeasureSpec,
+            heightMeasureSpec,
+        )
+        val marginLayoutParams = view.layoutParams as ViewGroup.MarginLayoutParams
+        return view.measuredWidth + marginLayoutParams.leftMargin + marginLayoutParams.rightMargin
     }
 
     private fun smoothScroll(
-        previousPos: Int,
-        currentPos: Int
+        previousPos: Int, currentPos: Int
     ) {
         tabAdapter!!.updateSelected(previousPos, currentPos)
         smoothScrollToDateTab(currentPos)
@@ -173,7 +196,7 @@ class DailyRepresentationTasksFragment : Fragment() {
 
     private fun smoothScrollToDateTab(currentPos: Int) {
         if (tabAdapter == null) return
-        val layoutManager = binding.dailyDateTab.layoutManager as? LinearLayoutManager ?: return
+        val layoutManager = binding.dailyDateTabList.layoutManager as? LinearLayoutManager ?: return
         layoutManager.startSmoothScroll(CenteredDateTabSmoothScroller(requireContext()).apply {
             targetPosition = currentPos
         })
@@ -181,10 +204,10 @@ class DailyRepresentationTasksFragment : Fragment() {
 
 
     private fun instantScroll(previousPos: Int, currentPos: Int) {
-        val rv = binding.dailyDateTab
+        val rv = binding.dailyDateTabList
         val layoutManager = rv.layoutManager as? LinearLayoutManager ?: return
         rv.visibility = View.INVISIBLE
-        rv.post {
+        rv.postOnAnimation {
             rv.doOnNextLayout {
                 rv.visibility = View.VISIBLE
                 smoothScrollToDateTab(currentPos)
