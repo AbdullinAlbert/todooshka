@@ -8,6 +8,6 @@
     <string name="daily_task_representation_mode">Режим ежедневника</string>
     <string name="weekly_task_representation_mode">Режим еженедельника</string>
     <string name="select_date">Выбрать дату</string>
-    <string name="press_enter_to_create_next_task">Нажмите ввод для создания следующей задачи</string>
+    <string name="create_simple_task">Создайте задачу</string>
     <string name="simple_task_settings_button_content_description">Индивидуальные настройки задачи</string>
 </resources>
