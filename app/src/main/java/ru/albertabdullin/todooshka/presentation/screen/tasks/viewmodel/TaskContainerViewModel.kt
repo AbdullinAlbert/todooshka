@@ -9,7 +9,9 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import ru.albertabdullin.todooshka.domain.repository.TaskRepository
 import ru.albertabdullin.todooshka.presentation.screen.tasks.value_object.DatePickerArgs
@@ -31,6 +33,15 @@ class TaskContainerViewModel(
                 .collect { firstDateBound ->
                     firstDate = firstDateBound
                 }
+        }
+    }
+
+    private val _dateTabBottomCoordinate = MutableStateFlow<Int>(-1)
+    val dateTabBottomCoordinate: StateFlow<Int> = _dateTabBottomCoordinate
+
+    fun updateDateTabBottomCoordinate(dateBottomCoordinate: Int) {
+        viewModelScope.launch {
+            _dateTabBottomCoordinate.tryEmit(dateBottomCoordinate)
         }
     }
 

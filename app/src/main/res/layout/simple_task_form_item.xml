@@ -1,50 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+
+<ru.albertabdullin.todooshka.presentation.screen.commonWidgets.SimpleTaskFormView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/simple_task_form"
     android:layout_width="match_parent"
-    android:paddingVertical="0dp"
-    android:layout_height="wrap_content">
-
-    <CheckBox
-        android:id="@+id/simple_task_checkBox"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        app:layout_constraintStart_toStartOf="parent"
-        android:enabled="true"
-        android:gravity="top"
-        android:buttonTint="@color/task_buttons_states"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <EditText
-        android:id="@+id/simple_task_form"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:autofillHints="no"
-        android:background="@color/white"
-        android:textColor="@color/black"
-        android:hint="@string/create_simple_task"
-        android:inputType="text|textMultiLine"
-        app:layout_constraintEnd_toStartOf="@+id/simple_task_settings"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toEndOf="@+id/simple_task_checkBox"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <androidx.appcompat.widget.AppCompatImageButton
-        android:id="@+id/simple_task_settings"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:contentDescription="@string/simple_task_settings_button_content_description"
-        android:scaleType="fitStart"
-        android:paddingStart="4dp"
-        android:paddingEnd="24dp"
-        android:paddingTop="12dp"
-        android:paddingBottom="12dp"
-        android:rotation="90"
-        android:background="@color/white"
-        android:enabled="false"
-        android:tint="@color/task_buttons_states"
-        android:src="@drawable/discover_tune_24dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+    android:layout_height="wrap_content" />

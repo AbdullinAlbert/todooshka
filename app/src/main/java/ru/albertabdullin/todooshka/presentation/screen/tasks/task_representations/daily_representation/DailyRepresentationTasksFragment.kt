@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.doOnNextLayout
+import androidx.core.view.doOnPreDraw
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -54,6 +55,11 @@ class DailyRepresentationTasksFragment : Fragment() {
         setupTabAdapter()
         collectScrollToDateEvents()
         setupViewPager()
+        binding.dailyDateTabList.doOnPreDraw {
+            val location = IntArray(2)
+            it.getLocationInWindow(location)
+            taskContainerViewModel.updateDateTabBottomCoordinate(location[1] + it.height)
+        }
     }
 
     private fun setupViewPager() {

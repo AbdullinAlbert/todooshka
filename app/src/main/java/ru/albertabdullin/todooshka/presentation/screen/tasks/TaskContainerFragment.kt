@@ -15,20 +15,17 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import ru.albertabdullin.todooshka.R
 import ru.albertabdullin.todooshka.databinding.TaskContainerBinding
 import ru.albertabdullin.todooshka.domain.date_operations.LAST_AVAILABLE_DATE
-import ru.albertabdullin.todooshka.domain.repository.TaskRepository
 import ru.albertabdullin.todooshka.presentation.dialog.datepicker.DatePickerFactory
 import ru.albertabdullin.todooshka.presentation.dialog.datepicker.model.AvailableDateRange
+import ru.albertabdullin.todooshka.presentation.extensions.diContainer
 import ru.albertabdullin.todooshka.presentation.screen.tasks.task_representations.daily_representation.DailyRepresentationTasksFragment
 import ru.albertabdullin.todooshka.presentation.screen.tasks.task_representations.weekly_representation.WeeklyRepresentationTasksFragment
 import ru.albertabdullin.todooshka.presentation.screen.tasks.viewmodel.TaskContainerViewModel
 import java.time.Instant
-import java.time.LocalDate
 import java.time.ZoneOffset
 
 class TaskContainerFragment : Fragment() {
@@ -50,9 +47,7 @@ class TaskContainerFragment : Fragment() {
 
     private val taskContainerViewModel: TaskContainerViewModel by viewModels {
         TaskContainerViewModel.factory(
-            taskRepository = object : TaskRepository {
-                override suspend fun getDateLeftBound(): Flow<LocalDate> = flowOf(LocalDate.now())
-            }
+            taskRepository = diContainer().getTaskRepositorySingleton()
         )
     }
 
