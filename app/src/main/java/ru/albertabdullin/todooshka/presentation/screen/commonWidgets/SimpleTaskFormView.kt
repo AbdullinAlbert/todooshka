@@ -39,7 +39,7 @@ class SimpleTaskFormView @JvmOverloads constructor(
         findViewById<EditText>(R.id.simple_task_description_form).setText(task.description)
     }
 
-    fun setOnSettingsButtonClickListener(clickListener: OnClickListener) {
+    fun setOnSettingsButtonClickListener(clickListener: () -> Unit) {
         findViewById<AppCompatImageButton>(R.id.simple_task_settings).setOnClickListener { view ->
             view.animate().cancel()
 
@@ -55,7 +55,7 @@ class SimpleTaskFormView @JvmOverloads constructor(
                         .start()
                 }.start()
 
-            clickListener.onClick(view)
+            clickListener()
         }
 
 
