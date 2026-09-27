@@ -12,6 +12,11 @@
     <color name="task_tracker_today_date_tab_background">@color/colorPrimaryContainer</color>
     <color name="bottom_navigation_background">@color/colorPrimaryContainer</color>
     <color name="task_tracker_today_date_tab_text_color">@color/on_primary</color>
-    <color name="task_control_enabled">@color/black</color>
-    <color name="task_control_disabled">@color/gray</color>
+    <color name="task_checkbox_enabled">@color/primary</color>
+    <color name="task_checkbox_disabled">@color/colorPrimaryContainer</color>
+    <color name="task_checkbox_icon_color">@color/on_primary</color>
+    <color name="task_settings_icon_enabled">@color/black</color>
+    <color name="task_settings_icon_disabled">@color/gray</color>
+    <color name="task_settings_icon_pressed">@color/white</color>
+    <color name="task_settings_background_pressed">@color/primary</color>
 </resources>

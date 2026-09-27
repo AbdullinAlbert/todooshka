@@ -40,8 +40,24 @@ class SimpleTaskFormView @JvmOverloads constructor(
     }
 
     fun setOnSettingsButtonClickListener(clickListener: OnClickListener) {
-        findViewById<AppCompatImageButton>(R.id.simple_task_settings).setOnClickListener(
-            clickListener
-        )
+        findViewById<AppCompatImageButton>(R.id.simple_task_settings).setOnClickListener { view ->
+            view.animate().cancel()
+
+            view.animate()
+                .scaleX(0.7f)
+                .scaleY(0.7f)
+                .setDuration(100)
+                .withEndAction {
+                    view.animate()
+                        .scaleY(1f)
+                        .scaleX(1f)
+                        .setDuration(100)
+                        .start()
+                }.start()
+
+            clickListener.onClick(view)
+        }
+
+
     }
 }
