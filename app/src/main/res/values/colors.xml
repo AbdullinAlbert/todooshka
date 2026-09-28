@@ -17,6 +17,6 @@
     <color name="task_checkbox_icon_color">@color/on_primary</color>
     <color name="task_settings_icon_enabled">@color/black</color>
     <color name="task_settings_icon_disabled">@color/gray</color>
-    <color name="task_settings_icon_pressed">@color/white</color>
-    <color name="task_settings_background_pressed">@color/primary</color>
+    <color name="task_settings_icon_button_clicked">@color/on_primary</color>
+    <color name="task_settings_background_button_pressed">@color/primary</color>
 </resources>

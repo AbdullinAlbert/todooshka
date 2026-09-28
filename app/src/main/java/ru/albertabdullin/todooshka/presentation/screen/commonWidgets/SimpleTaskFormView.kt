@@ -1,13 +1,21 @@
 package ru.albertabdullin.todooshka.presentation.screen.commonWidgets
 
+import android.animation.ValueAnimator
 import android.content.Context
+import android.content.res.ColorStateList
+import android.graphics.Paint
 import android.util.AttributeSet
+import android.util.Log
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.FrameLayout
 import androidx.appcompat.widget.AppCompatImageButton
+import androidx.core.animation.doOnEnd
+import androidx.core.content.ContextCompat
 import androidx.core.widget.doAfterTextChanged
+import com.google.android.material.checkbox.MaterialCheckBox
 import ru.albertabdullin.todooshka.R
 import ru.albertabdullin.todooshka.domain.entity.Task
 
@@ -23,8 +31,36 @@ class SimpleTaskFormView @JvmOverloads constructor(
         findViewById<AppCompatImageButton>(R.id.simple_task_settings).setOnClickListener {
             onSettingsClick?.invoke()
         }
-        findViewById<EditText>(R.id.simple_task_description_form).doAfterTextChanged { editable ->
+
+        val taskDescriptionEditText = findViewById<EditText>(R.id.simple_task_description_form)
+        taskDescriptionEditText.doAfterTextChanged { editable ->
             if (editable != null) setButtonsEnableState(editable.toString())
+        }
+        taskDescriptionEditText.setOnEditorActionListener { view, _, event ->
+            Log.d(SimpleTaskFormView::class.simpleName, "create task")
+            return@setOnEditorActionListener if (event?.keyCode == KeyEvent.KEYCODE_ENTER) {
+                if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0 && view.text.isNotBlank()) {
+                    true
+                } else false
+            } else false
+        }
+
+        findViewById<MaterialCheckBox>(R.id.simple_task_checkBox).setOnCheckedChangeListener { _, bool ->
+            onCheckedChangeListener(
+                bool
+            )
+        }
+    }
+
+    private fun onCheckedChangeListener(checked: Boolean) {
+        val descriptionForm = findViewById<EditText>(R.id.simple_task_description_form)
+        findViewById<AppCompatImageButton>(R.id.simple_task_settings).isEnabled = !checked
+        descriptionForm.isEnabled = !checked
+        if (checked) {
+            descriptionForm.paintFlags = descriptionForm.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
+        } else {
+            descriptionForm.paintFlags =
+                descriptionForm.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
         }
     }
 
@@ -40,18 +76,62 @@ class SimpleTaskFormView @JvmOverloads constructor(
     }
 
     fun setOnSettingsButtonClickListener(clickListener: () -> Unit) {
-        findViewById<AppCompatImageButton>(R.id.simple_task_settings).setOnClickListener { view ->
+        val button = findViewById<AppCompatImageButton>(R.id.simple_task_settings)
+
+        val defaultIconColor = ContextCompat.getColor(context, R.color.black)
+        val clickedIconColor =
+            ContextCompat.getColor(context, R.color.task_settings_icon_button_clicked)
+
+        val defaultButtonBackground =
+            ContextCompat.getColor(context, R.color.white)
+        val clickedButtonBackground =
+            ContextCompat.getColor(context, R.color.task_settings_background_button_pressed)
+
+        val iconColorAnimator = ValueAnimator.ofArgb(defaultIconColor, clickedIconColor).apply {
+            duration = 400
+            repeatMode = ValueAnimator.REVERSE
+            repeatCount = 1
+            addUpdateListener { animator ->
+                button.imageTintList = ColorStateList.valueOf(animator.animatedValue as Int)
+            }
+        }
+        iconColorAnimator.doOnEnd {
+            button.imageTintList =
+                ContextCompat.getColorStateList(
+                    context,
+                    R.color.task_settings_icon_states
+                )
+        }
+
+        val backgroundButtonAnimator = ValueAnimator.ofArgb(
+            defaultButtonBackground,
+            clickedButtonBackground
+        ).apply {
+            duration = 400
+            repeatMode = ValueAnimator.REVERSE
+            repeatCount = 1
+            addUpdateListener { animator ->
+                button.backgroundTintList = ColorStateList.valueOf(animator.animatedValue as Int)
+            }
+        }
+
+        button.setOnClickListener { view ->
+            backgroundButtonAnimator.cancel()
+            iconColorAnimator.cancel()
             view.animate().cancel()
+
+            backgroundButtonAnimator.start()
+            iconColorAnimator.start()
 
             view.animate()
                 .scaleX(0.7f)
                 .scaleY(0.7f)
-                .setDuration(100)
+                .setDuration(200)
                 .withEndAction {
                     view.animate()
                         .scaleY(1f)
                         .scaleX(1f)
-                        .setDuration(100)
+                        .setDuration(200)
                         .start()
                 }.start()
 
