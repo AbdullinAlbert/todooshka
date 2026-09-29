@@ -71,7 +71,14 @@ class DailyTasksPageFragment : Fragment() {
 
     private fun setupTasksList() {
         tasksAdapter = TasksAdapter(
-            onSettingsClick = { task -> })
+            onSettingsClick = { task -> },
+            onSubmitTask = { submittedTaskPosition, taskDescription ->
+                dailyTasksPageViewModel.onTaskSubmitted(
+                    submittedTaskPosition,
+                    taskDescription
+                )
+            }
+        )
         binding.tasksList.adapter = tasksAdapter
         binding.tasksList.layoutManager =
             LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)

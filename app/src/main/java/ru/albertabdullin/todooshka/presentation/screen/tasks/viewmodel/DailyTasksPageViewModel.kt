@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import ru.albertabdullin.todooshka.domain.entity.Task
+import ru.albertabdullin.todooshka.domain.useCase.TaskAdded
 import ru.albertabdullin.todooshka.domain.useCase.TasksUseCase
 import java.time.LocalDate
 
@@ -30,10 +31,26 @@ class DailyTasksPageViewModel(
         }
     }
 
+    fun onTaskSubmitted(taskPosition: Int, taskDescription: String) {
+        val result = tasksUseCase.submitTask(
+            _tasksList.value,
+            taskPosition,
+            taskDescription
+        )
+        when (result) {
+            is TaskAdded -> {
+                viewModelScope.launch {
+                    _tasksList.tryEmit(result.newTasksList)
+                }
+            }
+
+            else -> Unit
+        }
+    }
+
     companion object {
         fun factory(
-            tasksUseCase: TasksUseCase,
-            dateForPage: LocalDate
+            tasksUseCase: TasksUseCase, dateForPage: LocalDate
         ): ViewModelProvider.Factory = viewModelFactory {
             initializer {
                 DailyTasksPageViewModel(

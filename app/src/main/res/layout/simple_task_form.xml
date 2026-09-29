@@ -18,7 +18,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:useMaterialThemeColors="false" />
 
-    <EditText
+    <ru.albertabdullin.todooshka.presentation.screen.commonWidgets.TaskEditText
         android:id="@+id/simple_task_description_form"
         android:layout_width="0dp"
         android:layout_height="wrap_content"

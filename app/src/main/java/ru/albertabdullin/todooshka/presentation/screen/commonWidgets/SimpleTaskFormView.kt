@@ -5,11 +5,8 @@ import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.Paint
 import android.util.AttributeSet
-import android.util.Log
-import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.widget.CheckBox
-import android.widget.EditText
 import android.widget.FrameLayout
 import androidx.appcompat.widget.AppCompatImageButton
 import androidx.core.animation.doOnEnd
@@ -24,25 +21,24 @@ class SimpleTaskFormView @JvmOverloads constructor(
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
 ) : FrameLayout(context, attrs, defStyleAttr) {
-    var onSettingsClick: (() -> Unit)? = null
+
+    var onSubmitTask: ((String) -> Unit)? = null
+
+    private var _taskDescriptionEditText: TaskEditText? = null
+    private val taskDescriptionEditText: TaskEditText
+        get() = _taskDescriptionEditText!!
 
     init {
         LayoutInflater.from(context).inflate(R.layout.simple_task_form, this, true)
-        findViewById<AppCompatImageButton>(R.id.simple_task_settings).setOnClickListener {
-            onSettingsClick?.invoke()
+
+        _taskDescriptionEditText = findViewById(R.id.simple_task_description_form)
+
+        taskDescriptionEditText.onSubmitTask = {
+            onSubmitTask?.invoke(taskDescriptionEditText.text?.toString() ?: "")
         }
 
-        val taskDescriptionEditText = findViewById<EditText>(R.id.simple_task_description_form)
         taskDescriptionEditText.doAfterTextChanged { editable ->
             if (editable != null) setButtonsEnableState(editable.toString())
-        }
-        taskDescriptionEditText.setOnEditorActionListener { view, _, event ->
-            Log.d(SimpleTaskFormView::class.simpleName, "create task")
-            return@setOnEditorActionListener if (event?.keyCode == KeyEvent.KEYCODE_ENTER) {
-                if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0 && view.text.isNotBlank()) {
-                    true
-                } else false
-            } else false
         }
 
         findViewById<MaterialCheckBox>(R.id.simple_task_checkBox).setOnCheckedChangeListener { _, bool ->
@@ -53,14 +49,14 @@ class SimpleTaskFormView @JvmOverloads constructor(
     }
 
     private fun onCheckedChangeListener(checked: Boolean) {
-        val descriptionForm = findViewById<EditText>(R.id.simple_task_description_form)
         findViewById<AppCompatImageButton>(R.id.simple_task_settings).isEnabled = !checked
-        descriptionForm.isEnabled = !checked
+        taskDescriptionEditText.isEnabled = !checked
         if (checked) {
-            descriptionForm.paintFlags = descriptionForm.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
+            taskDescriptionEditText.paintFlags =
+                taskDescriptionEditText.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
         } else {
-            descriptionForm.paintFlags =
-                descriptionForm.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
+            taskDescriptionEditText.paintFlags =
+                taskDescriptionEditText.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
         }
     }
 
@@ -72,7 +68,7 @@ class SimpleTaskFormView @JvmOverloads constructor(
 
     fun setTask(task: Task) {
         findViewById<CheckBox>(R.id.simple_task_checkBox).isChecked = task.isCompleted
-        findViewById<EditText>(R.id.simple_task_description_form).setText(task.description)
+        taskDescriptionEditText.setText(task.description)
     }
 
     fun setOnSettingsButtonClickListener(clickListener: () -> Unit) {
