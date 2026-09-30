@@ -24,6 +24,9 @@ class DailyTasksPageViewModel(
     private val _tasksList = MutableStateFlow<List<Task>>(emptyList())
     val taskList: StateFlow<List<Task>> = _tasksList
 
+    private val defaultActiveTaskId = -1
+    private var activeTaskId: Int = defaultActiveTaskId
+
     init {
         viewModelScope.launch {
             val list = tasksUseCase.getTasks(dateForPage)
@@ -31,8 +34,20 @@ class DailyTasksPageViewModel(
         }
     }
 
-    fun onTaskSubmitted(taskPosition: Int, taskDescription: String) {
-        val result = tasksUseCase.submitTask(
+    fun getActiveTaskPosition(): Int {
+        return _tasksList.value.indexOfFirst { task -> task.id == activeTaskId }
+    }
+
+    fun isActiveTask(task: Task): Boolean {
+        val isActiveTask = task.id == activeTaskId
+        if (isActiveTask) {
+            activeTaskId = defaultActiveTaskId
+        }
+        return isActiveTask
+    }
+
+    fun onTaskSubmitted(taskPosition: Int, taskDescription: List<String>) {
+        val result = tasksUseCase.submitTaskAndCreateNewOne(
             _tasksList.value,
             taskPosition,
             taskDescription
@@ -40,6 +55,7 @@ class DailyTasksPageViewModel(
         when (result) {
             is TaskAdded -> {
                 viewModelScope.launch {
+                    activeTaskId = result.newTaskId
                     _tasksList.tryEmit(result.newTasksList)
                 }
             }

@@ -14,10 +14,10 @@ class TasksUseCase(
         return listOf(NewTask())
     }
 
-    fun submitTask(
+    fun submitTaskAndCreateNewOne(
         currentTasksList: List<Task>,
         submittedTaskPosition: Int,
-        taskDescription: String
+        taskDescription: List<String>
     ): SubmitTaskResult {
         if (taskDescription.isBlank()) return NoTaskAdded
         //при попытке добавить новую задачу в середину списка
@@ -25,12 +25,13 @@ class TasksUseCase(
             currentTasksList[submittedTaskPosition + 1] is NewTask
         ) return NoTaskAdded
 
-        val newTaskPosition = submittedTaskPosition + 1
         val maxId = currentTasksList.maxOf { task -> task.id }
+        val newTaskPosition = submittedTaskPosition + 1
+        val newTaskId = maxId + 1
         val newTasksList = currentTasksList.toMutableList().apply {
-            add(newTaskPosition, NewTask(id = maxId + 1))
+            add(newTaskPosition, NewTask(id = newTaskId))
         }
-        return TaskAdded(newTasksList = newTasksList, newTaskPosition = newTaskPosition)
+        return TaskAdded(newTasksList = newTasksList, newTaskId = newTaskId)
     }
 
 
@@ -39,7 +40,7 @@ class TasksUseCase(
 sealed interface SubmitTaskResult
 
 data class TaskAdded(
-    val newTasksList: List<Task>, val newTaskPosition: Int
+    val newTasksList: List<Task>, val newTaskId: Int
 ) : SubmitTaskResult
 
 data object NoTaskAdded : SubmitTaskResult

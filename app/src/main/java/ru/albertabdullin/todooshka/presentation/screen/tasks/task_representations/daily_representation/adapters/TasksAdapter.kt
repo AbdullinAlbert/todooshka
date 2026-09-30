@@ -14,7 +14,8 @@ import ru.albertabdullin.todooshka.domain.entity.Task
 
 class TasksAdapter(
     private val onSettingsClick: (Task) -> Unit,
-    private val onSubmitTask: (Int, String) -> Unit
+    private val onSubmitTask: (Int, List<String>) -> Unit,
+    private val isActiveTask: (Task) -> Boolean
 ) : ListAdapter<Task, TasksAdapter.TaskViewHolder>(TaskDiffCallback) {
 
     private val simpleTaskViewType = 0
@@ -26,6 +27,14 @@ class TasksAdapter(
             is NewTask, is SimpleTask -> simpleTaskViewType
             is ComplexTask -> complexTaskViewType
         }
+    }
+
+    init {
+        setHasStableIds(true)
+    }
+
+    override fun getItemId(position: Int): Long {
+        return getItem(position).id.toLong()
     }
 
     override fun onCreateViewHolder(
@@ -59,6 +68,9 @@ class TasksAdapter(
             }
             binding.simpleTaskForm.onSubmitTask = { taskDescription ->
                 onSubmitTask(position, taskDescription)
+            }
+            if (isActiveTask(task)) {
+                binding.simpleTaskForm.requestFocusOnTask()
             }
         }
     }

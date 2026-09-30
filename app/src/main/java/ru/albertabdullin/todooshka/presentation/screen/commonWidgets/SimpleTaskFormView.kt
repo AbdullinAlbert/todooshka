@@ -22,7 +22,7 @@ class SimpleTaskFormView @JvmOverloads constructor(
     defStyleAttr: Int = 0
 ) : FrameLayout(context, attrs, defStyleAttr) {
 
-    var onSubmitTask: ((String) -> Unit)? = null
+    var onSubmitTask: ((List<String>) -> Unit)? = null
 
     private var _taskDescriptionEditText: TaskEditText? = null
     private val taskDescriptionEditText: TaskEditText
@@ -34,7 +34,11 @@ class SimpleTaskFormView @JvmOverloads constructor(
         _taskDescriptionEditText = findViewById(R.id.simple_task_description_form)
 
         taskDescriptionEditText.onSubmitTask = {
-            onSubmitTask?.invoke(taskDescriptionEditText.text?.toString() ?: "")
+            val taskDescriptionText = taskDescriptionEditText.text?.toString() ?: ""
+            val selectionStart = taskDescriptionEditText.selectionStart
+            val selectionEnd = taskDescriptionEditText.selectionEnd
+
+            onSubmitTask?.invoke(emptyList())
         }
 
         taskDescriptionEditText.doAfterTextChanged { editable ->
@@ -68,7 +72,13 @@ class SimpleTaskFormView @JvmOverloads constructor(
 
     fun setTask(task: Task) {
         findViewById<CheckBox>(R.id.simple_task_checkBox).isChecked = task.isCompleted
-        taskDescriptionEditText.setText(task.description)
+        if (taskDescriptionEditText.text?.toString() != task.description) {
+            taskDescriptionEditText.setText(task.description)
+        }
+    }
+
+    fun requestFocusOnTask() {
+        taskDescriptionEditText.requestFocus()
     }
 
     fun setOnSettingsButtonClickListener(clickListener: () -> Unit) {

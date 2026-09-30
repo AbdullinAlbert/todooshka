@@ -14,7 +14,6 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
-import ru.albertabdullin.todooshka.R
 import ru.albertabdullin.todooshka.databinding.DailyRepresentationPageFragmentBinding
 import ru.albertabdullin.todooshka.presentation.extensions.diContainer
 import ru.albertabdullin.todooshka.presentation.screen.tasks.task_representations.daily_representation.adapters.TasksAdapter
@@ -77,7 +76,8 @@ class DailyTasksPageFragment : Fragment() {
                     submittedTaskPosition,
                     taskDescription
                 )
-            }
+            },
+            isActiveTask = dailyTasksPageViewModel::isActiveTask
         )
         binding.tasksList.adapter = tasksAdapter
         binding.tasksList.layoutManager =
@@ -89,7 +89,16 @@ class DailyTasksPageFragment : Fragment() {
             viewLifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 dailyTasksPageViewModel.taskList.collect {
                     if (tasksAdapter == null) return@collect
-                    tasksAdapter!!.submitList(it)
+                    tasksAdapter!!.submitList(it) {
+                        val layoutManager = binding.tasksList.layoutManager as? LinearLayoutManager
+                            ?: return@submitList
+                        val pos = dailyTasksPageViewModel.getActiveTaskPosition()
+                        if (pos < 0) return@submitList
+                        val view = layoutManager.findViewByPosition(pos)
+                        if (view == null) {
+                            layoutManager.scrollToPosition(it.size - 1)
+                        }
+                    }
                 }
             }
         }
@@ -103,10 +112,8 @@ class DailyTasksPageFragment : Fragment() {
                         binding.tasksList.doOnPreDraw { tasksList ->
                             val location = IntArray(2)
                             tasksList.getLocationInWindow(location)
-                            val tasksListDefaultTopPadding =
-                                resources.getDimensionPixelSize(R.dimen.tasks_list_top_padding)
                             val tasksListTopPadding =
-                                (dateTabBottomCoordinate - location[1]) + tasksListDefaultTopPadding
+                                (dateTabBottomCoordinate - location[1])
                             tasksList.updatePadding(top = tasksListTopPadding)
                             tasksList.visibility = View.VISIBLE
                         }

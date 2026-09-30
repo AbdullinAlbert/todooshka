@@ -3,6 +3,7 @@ package ru.albertabdullin.todooshka.presentation.screen.main_screen_container
 import android.content.res.Configuration.ORIENTATION_LANDSCAPE
 import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -31,12 +32,34 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            var right = 0
-            var bottom = 0
-            if (resources.configuration.orientation == ORIENTATION_LANDSCAPE) {
-                right = systemBars.right
-                bottom = systemBars.bottom
+
+            val ime = insets.getInsets(
+                WindowInsetsCompat.Type.ime()
+            )
+
+            val isLandscape =
+                resources.configuration.orientation == ORIENTATION_LANDSCAPE
+
+            val right = if (isLandscape) {
+                systemBars.right
+            } else {
+                0
             }
+
+            val bottom = if (
+                insets.isVisible(WindowInsetsCompat.Type.ime())
+            ) {
+                val navigationBars = insets.getInsets(
+                    WindowInsetsCompat.Type.navigationBars()
+                )
+                (ime.bottom - navigationBars.bottom).coerceAtLeast(0)
+            } else if (isLandscape) {
+                systemBars.bottom
+            } else {
+                0
+            }
+
+
             v.setPadding(systemBars.left, systemBars.top, right, bottom)
             insets
         }
@@ -57,6 +80,13 @@ class MainActivity : AppCompatActivity() {
             }
             binding.mainViewPager.currentItem = position
             return@setOnItemSelectedListener true
+        }
+        binding.mainBottomNavigation.addOnLayoutChangeListener { v, _, _, _, _, _, _, _, _ ->
+
+            Log.d(
+                "BNB",
+                "height=${v.height}, paddingBottom=${v.paddingBottom}"
+            )
         }
     }
 }

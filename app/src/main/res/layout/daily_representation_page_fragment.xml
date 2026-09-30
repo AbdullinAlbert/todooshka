@@ -13,7 +13,6 @@
         android:layout_height="0dp"
         android:background="@color/white"
         android:clipToPadding="false"
-        android:paddingTop="@dimen/tasks_list_top_padding"
         android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
