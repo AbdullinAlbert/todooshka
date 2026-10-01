@@ -17,24 +17,21 @@ class TasksUseCase(
     fun submitTaskAndCreateNewOne(
         currentTasksList: List<Task>,
         submittedTaskPosition: Int,
-        taskDescription: List<String>
+        submitTaskData: SubmitTaskData
     ): SubmitTaskResult {
-        if (taskDescription.isBlank()) return NoTaskAdded
-        //при попытке добавить новую задачу в середину списка
-        if (submittedTaskPosition < currentTasksList.size - 1 &&
-            currentTasksList[submittedTaskPosition + 1] is NewTask
-        ) return NoTaskAdded
-
-        val maxId = currentTasksList.maxOf { task -> task.id }
-        val newTaskPosition = submittedTaskPosition + 1
-        val newTaskId = maxId + 1
-        val newTasksList = currentTasksList.toMutableList().apply {
-            add(newTaskPosition, NewTask(id = newTaskId))
-        }
-        return TaskAdded(newTasksList = newTasksList, newTaskId = newTaskId)
+        if (submitTaskData.taskDescriptionIsEmpty)
+        val newId = currentTasksList.maxOf { task -> task.id } + 1
+        val currentSumb
     }
 
+}
 
+data class SubmitTaskData(
+    val taskDescriptionPart1: String,
+    val taskDescriptionPart2: String
+) {
+    val taskDescriptionIsEmpty: Boolean
+        get() = taskDescriptionPart1.isEmpty() && taskDescriptionPart2.isEmpty()
 }
 
 sealed interface SubmitTaskResult

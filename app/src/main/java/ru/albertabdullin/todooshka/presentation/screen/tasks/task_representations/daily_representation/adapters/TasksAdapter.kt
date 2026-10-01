@@ -11,10 +11,11 @@ import ru.albertabdullin.todooshka.domain.entity.ComplexTask
 import ru.albertabdullin.todooshka.domain.entity.NewTask
 import ru.albertabdullin.todooshka.domain.entity.SimpleTask
 import ru.albertabdullin.todooshka.domain.entity.Task
+import ru.albertabdullin.todooshka.presentation.commonWidgets.SimpleTaskFormView.SubmitTaskData
 
 class TasksAdapter(
     private val onSettingsClick: (Task) -> Unit,
-    private val onSubmitTask: (Int, List<String>) -> Unit,
+    private val onSubmitTask: (Int, SubmitTaskData) -> Unit,
     private val isActiveTask: (Task) -> Boolean
 ) : ListAdapter<Task, TasksAdapter.TaskViewHolder>(TaskDiffCallback) {
 
@@ -66,11 +67,13 @@ class TasksAdapter(
             binding.simpleTaskForm.setOnSettingsButtonClickListener {
                 onSettingsClick(task)
             }
-            binding.simpleTaskForm.onSubmitTask = { taskDescription ->
-                onSubmitTask(position, taskDescription)
+            binding.simpleTaskForm.onSubmitTask = { taskDescriptionData ->
+                onSubmitTask(position, taskDescriptionData)
             }
             if (isActiveTask(task)) {
                 binding.simpleTaskForm.requestFocusOnTask()
+            } else {
+                binding.simpleTaskForm.clearFocusOnTask()
             }
         }
     }

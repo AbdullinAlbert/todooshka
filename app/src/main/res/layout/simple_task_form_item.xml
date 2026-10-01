@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<ru.albertabdullin.todooshka.presentation.screen.commonWidgets.SimpleTaskFormView xmlns:android="http://schemas.android.com/apk/res/android"
+<ru.albertabdullin.todooshka.presentation.commonWidgets.SimpleTaskFormView xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/simple_task_form"
     android:layout_width="match_parent"
     android:layout_height="wrap_content" />

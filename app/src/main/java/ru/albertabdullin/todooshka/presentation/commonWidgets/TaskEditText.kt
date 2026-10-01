@@ -1,16 +1,17 @@
-package ru.albertabdullin.todooshka.presentation.screen.commonWidgets
+package ru.albertabdullin.todooshka.presentation.commonWidgets
 
 import android.content.Context
 import android.util.AttributeSet
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputConnection
 import android.view.inputmethod.InputConnectionWrapper
+import androidx.appcompat.R
 import androidx.appcompat.widget.AppCompatEditText
 
 class TaskEditText @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
-    defStyleAttr: Int = androidx.appcompat.R.attr.editTextStyle
+    defStyleAttr: Int = R.attr.editTextStyle
 ) : AppCompatEditText(context, attrs, defStyleAttr) {
 
     var onSubmitTask: (() -> Unit)? = null
