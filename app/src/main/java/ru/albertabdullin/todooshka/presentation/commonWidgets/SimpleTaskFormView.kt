@@ -97,6 +97,7 @@ class SimpleTaskFormView @JvmOverloads constructor(
 
     fun requestFocusOnTask() {
         taskDescriptionEditText.requestFocus()
+        taskDescriptionEditText.setSelection(0)
     }
 
     fun clearFocusOnTask() {

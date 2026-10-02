@@ -23,12 +23,13 @@ class TasksUseCase(
         submittedTaskDescriptionPart2: String,
     ): SubmitTaskResult {
         //если текущая строка пустая, то ничего не добавляем
-        if (submittedTaskDescriptionPart1.isEmpty() && submittedTaskDescriptionPart2.isEmpty()) return NoTaskAdded
+        if (submittedTaskDescriptionPart1.isBlank() && submittedTaskDescriptionPart2.isBlank()) return NoTaskAdded
 
         val newTaskId = currentTasksList.maxOf { task -> task.id } + 1
-        val submittedTaskPosition = currentTasksList.indexOfFirst { task -> task.id == submittedTaskId }
+        val submittedTaskPosition =
+            currentTasksList.indexOfFirst { task -> task.id == submittedTaskId }
 
-        if (submittedTaskDescriptionPart1.isEmpty()) {
+        if (submittedTaskDescriptionPart1.isBlank()) {
             //если курсор стоит перед первым символом
             return if (submittedTaskPosition == 0 || (currentTasksList[submittedTaskPosition - 1].description.isNotBlank())) {
                 addTask(
@@ -41,7 +42,9 @@ class TasksUseCase(
                 )
             } else NoTaskAdded
         } else { //если курсор стоит в середине текста или в конце
-            return if (submittedTaskPosition == currentTasksList.size - 1 || (currentTasksList[submittedTaskPosition + 1].description.isNotBlank())) {
+            val canAddTask = submittedTaskPosition == currentTasksList.lastIndex ||
+                    submittedTaskDescriptionPart2.isNotBlank() || (currentTasksList[submittedTaskPosition + 1].description.isNotBlank())
+            return if (canAddTask) {
                 addTask(
                     currentTasksList = currentTasksList,
                     submittedTaskPosition = submittedTaskPosition,
