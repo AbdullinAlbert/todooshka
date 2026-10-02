@@ -2,6 +2,8 @@ package ru.albertabdullin.todooshka.presentation.commonWidgets
 
 import android.content.Context
 import android.util.AttributeSet
+import android.util.Log
+import android.view.KeyEvent
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputConnection
 import android.view.inputmethod.InputConnectionWrapper
@@ -15,6 +17,13 @@ class TaskEditText @JvmOverloads constructor(
 ) : AppCompatEditText(context, attrs, defStyleAttr) {
 
     var onSubmitTask: (() -> Unit)? = null
+    var onBackspaceInEmptyTask: (() -> Unit)? = null
+
+    private var isDeletingHandled = false
+
+    fun resetIsDeletingHandledFlag() {
+        isDeletingHandled = false
+    }
 
     override fun onCreateInputConnection(outAttrs: EditorInfo): InputConnection? {
 
@@ -26,7 +35,32 @@ class TaskEditText @JvmOverloads constructor(
                     onSubmitTask?.invoke()
                     return true
                 }
+                val isTextNotBlank = text?.toString()?.isNotBlank() ?: false
+                if (isTextNotBlank) {
+                    isDeletingHandled = false
+                    return true
+                }
                 return super.commitText(text, newCursorPosition)
+            }
+
+            override fun sendKeyEvent(event: KeyEvent): Boolean {
+                val isTextEmpty = text?.toString()?.isEmpty() ?: false
+
+                if (event.keyCode == KeyEvent.KEYCODE_DEL &&
+                    event.action == KeyEvent.ACTION_DOWN &&
+                    isTextEmpty
+                ) {
+                    return if (!isDeletingHandled) {
+                        isDeletingHandled = true
+                        onBackspaceInEmptyTask?.invoke()
+                        true
+                    } else {
+                        false
+                    }
+
+                }
+
+                return super.sendKeyEvent(event)
             }
         }
     }
