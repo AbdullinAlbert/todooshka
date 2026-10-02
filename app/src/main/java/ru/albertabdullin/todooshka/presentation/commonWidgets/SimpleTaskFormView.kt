@@ -21,7 +21,7 @@ class SimpleTaskFormView @JvmOverloads constructor(
     defStyleAttr: Int = 0
 ) : FrameLayout(context, attrs, defStyleAttr) {
 
-    var onSubmitTask: ((SubmitTaskData) -> Unit)? = null
+    var onSubmitTask: ((String, String) -> Unit)? = null
 
     private var _taskDescriptionEditText: TaskEditText? = null
     private val taskDescriptionEditText: TaskEditText
@@ -58,12 +58,7 @@ class SimpleTaskFormView @JvmOverloads constructor(
             val part1 = taskDescriptionText.substring(0, selectionStart)
             val part2 =
                 taskDescriptionText.substring(selectionEnd.coerceAtMost(taskDescriptionText.length))
-            onSubmitTask?.invoke(
-                SubmitTaskData(
-                    taskDescriptionPart1 = part1,
-                    taskDescriptionPart2 = part2
-                )
-            )
+            onSubmitTask?.invoke(part1, part2)
         }
 
         taskDescriptionEditText.doAfterTextChanged { _ ->
@@ -171,9 +166,4 @@ class SimpleTaskFormView @JvmOverloads constructor(
         }
 
     }
-
-    data class SubmitTaskData(
-        val taskDescriptionPart1: String,
-        val taskDescriptionPart2: String
-    )
 }

@@ -11,11 +11,10 @@ import ru.albertabdullin.todooshka.domain.entity.ComplexTask
 import ru.albertabdullin.todooshka.domain.entity.NewTask
 import ru.albertabdullin.todooshka.domain.entity.SimpleTask
 import ru.albertabdullin.todooshka.domain.entity.Task
-import ru.albertabdullin.todooshka.presentation.commonWidgets.SimpleTaskFormView.SubmitTaskData
 
 class TasksAdapter(
     private val onSettingsClick: (Task) -> Unit,
-    private val onSubmitTask: (Int, SubmitTaskData) -> Unit,
+    private val onSubmitTask: (Int, String, String) -> Unit,
     private val isActiveTask: (Task) -> Boolean
 ) : ListAdapter<Task, TasksAdapter.TaskViewHolder>(TaskDiffCallback) {
 
@@ -57,19 +56,24 @@ class TasksAdapter(
     override fun onBindViewHolder(
         holder: TaskViewHolder, position: Int
     ) {
-        holder.bind(position, getItem(position))
+        holder.bind(getItem(position))
     }
 
     inner class SimpleTaskViewHolder(private val binding: SimpleTaskFormItemBinding) :
         TaskViewHolder(binding.root) {
-        override fun bind(position: Int, task: Task) {
+        override fun bind(task: Task) {
             binding.simpleTaskForm.setTask(task)
             binding.simpleTaskForm.setOnSettingsButtonClickListener {
                 onSettingsClick(task)
             }
-            binding.simpleTaskForm.onSubmitTask = { taskDescriptionData ->
-                onSubmitTask(position, taskDescriptionData)
-            }
+            binding.simpleTaskForm.onSubmitTask =
+                { submittedTaskDescriptionPart1, submittedTaskDescriptionPart2 ->
+                    onSubmitTask(
+                        task.id,
+                        submittedTaskDescriptionPart1,
+                        submittedTaskDescriptionPart2
+                    )
+                }
             if (isActiveTask(task)) {
                 binding.simpleTaskForm.requestFocusOnTask()
             } else {
@@ -79,7 +83,7 @@ class TasksAdapter(
     }
 
     open class TaskViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        open fun bind(position: Int, task: Task) {}
+        open fun bind(task: Task) {}
     }
 
     private object TaskDiffCallback : DiffUtil.ItemCallback<Task>() {

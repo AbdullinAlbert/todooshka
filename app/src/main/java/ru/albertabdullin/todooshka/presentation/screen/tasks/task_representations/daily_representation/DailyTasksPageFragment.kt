@@ -71,10 +71,11 @@ class DailyTasksPageFragment : Fragment() {
     private fun setupTasksList() {
         tasksAdapter = TasksAdapter(
             onSettingsClick = { task -> },
-            onSubmitTask = { submittedTaskPosition, taskDescription ->
+            onSubmitTask = { submittedTaskId, submittedTaskDescriptionPart1, submittedTaskDescriptionPart2 ->
                 dailyTasksPageViewModel.onTaskSubmitted(
-                    submittedTaskPosition,
-                    taskDescription
+                    submittedTaskId,
+                    submittedTaskDescriptionPart1,
+                    submittedTaskDescriptionPart2
                 )
             },
             isActiveTask = dailyTasksPageViewModel::isActiveTask
@@ -112,8 +113,7 @@ class DailyTasksPageFragment : Fragment() {
                         binding.tasksList.doOnPreDraw { tasksList ->
                             val location = IntArray(2)
                             tasksList.getLocationInWindow(location)
-                            val tasksListTopPadding =
-                                (dateTabBottomCoordinate - location[1])
+                            val tasksListTopPadding = (dateTabBottomCoordinate - location[1])
                             tasksList.updatePadding(top = tasksListTopPadding)
                             tasksList.visibility = View.VISIBLE
                         }

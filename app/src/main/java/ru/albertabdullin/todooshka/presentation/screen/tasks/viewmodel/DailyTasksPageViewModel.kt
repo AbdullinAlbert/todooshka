@@ -11,10 +11,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import ru.albertabdullin.todooshka.domain.entity.Task
-import ru.albertabdullin.todooshka.domain.useCase.SubmitTaskData
 import ru.albertabdullin.todooshka.domain.useCase.TaskAdded
 import ru.albertabdullin.todooshka.domain.useCase.TasksUseCase
-import ru.albertabdullin.todooshka.presentation.commonWidgets.SimpleTaskFormView
 import java.time.LocalDate
 
 class DailyTasksPageViewModel(
@@ -48,14 +46,16 @@ class DailyTasksPageViewModel(
         return isActiveTask
     }
 
-    fun onTaskSubmitted(taskPosition: Int, submitTaskData: SimpleTaskFormView.SubmitTaskData) {
+    fun onTaskSubmitted(
+        taskId: Int,
+        taskDescriptionPart1: String,
+        taskDescriptionPart2: String
+    ) {
         val result = tasksUseCase.submitTaskAndCreateNewOne(
             _tasksList.value,
-            taskPosition,
-            SubmitTaskData(
-                taskDescriptionPart1 = submitTaskData.taskDescriptionPart2,
-                taskDescriptionPart2 = submitTaskData.taskDescriptionPart2
-            )
+            taskId,
+            taskDescriptionPart1,
+            taskDescriptionPart2
         )
         when (result) {
             is TaskAdded -> {
