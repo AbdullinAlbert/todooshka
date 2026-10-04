@@ -21,7 +21,7 @@ import ru.albertabdullin.todooshka.databinding.DailyRepresentationTaskFragmentBi
 import ru.albertabdullin.todooshka.domain.date_operations.DailyDateRange
 import ru.albertabdullin.todooshka.domain.date_operations.LAST_AVAILABLE_DATE
 import ru.albertabdullin.todooshka.presentation.screen.tasks.date_tab_scroll.CenteredDateTabSmoothScroller
-import ru.albertabdullin.todooshka.presentation.screen.tasks.model.TabPropertyValues
+import ru.albertabdullin.todooshka.presentation.model.TabPropertyValues
 import ru.albertabdullin.todooshka.presentation.screen.tasks.task_representations.daily_representation.adapters.DailyTasksPageViewPagerAdapter
 import ru.albertabdullin.todooshka.presentation.screen.tasks.task_representations.daily_representation.adapters.RecyclerViewDailyAdapter
 import ru.albertabdullin.todooshka.presentation.screen.tasks.value_object.DateSelectionChangedArgs

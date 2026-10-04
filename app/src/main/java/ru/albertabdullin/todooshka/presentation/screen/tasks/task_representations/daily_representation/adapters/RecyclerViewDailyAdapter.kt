@@ -7,7 +7,7 @@ import androidx.recyclerview.widget.RecyclerView
 import ru.albertabdullin.todooshka.databinding.TaskTrackerDailyDateTabBinding
 import ru.albertabdullin.todooshka.domain.date_operations.DailyDateRange
 import ru.albertabdullin.todooshka.domain.date_operations.DateRangeChange
-import ru.albertabdullin.todooshka.presentation.screen.tasks.model.TabPropertyValues
+import ru.albertabdullin.todooshka.presentation.model.TabPropertyValues
 import java.time.LocalDate
 
 class RecyclerViewDailyAdapter(

@@ -1,8 +1,5 @@
 package ru.albertabdullin.todooshka.domain.useCase
 
-import ru.albertabdullin.todooshka.domain.entity.ComplexTask
-import ru.albertabdullin.todooshka.domain.entity.NewTask
-import ru.albertabdullin.todooshka.domain.entity.SimpleTask
 import ru.albertabdullin.todooshka.domain.entity.Task
 import ru.albertabdullin.todooshka.domain.repository.TaskRepository
 import java.time.LocalDate
@@ -13,7 +10,29 @@ class TasksUseCase(
     suspend fun getTasks(selectedDate: LocalDate): List<Task> {
         val tasks = taskRepository.getTasks(selectedDate)
         if (tasks.isNotEmpty()) return tasks
-        return listOf(NewTask())
+        return listOf(Task(id = 0))
+    }
+
+    fun deleteTask(
+        currentTasksList: List<Task>,
+        deletedTaskId: Int,
+        deletedTaskDescription: String
+    ): DeleteTaskResult {
+        if (currentTasksList.size == 1) return NoTaskDeleted
+        val tempList = currentTasksList.toMutableList()
+        val deletedTaskIndex = tempList.indexOfFirst { task -> task.id == deletedTaskId }
+        if (deletedTaskIndex == 0 && deletedTaskDescription.isNotBlank()) return NoTaskDeleted
+        val activeTaskIndex =
+            if (deletedTaskIndex == 0) 1 else deletedTaskIndex - 1
+        val newActiveTask = tempList[activeTaskIndex]
+        tempList[activeTaskIndex] = newActiveTask.copy(description = newActiveTask.description + deletedTaskDescription)
+        val selectionPos = if (deletedTaskIndex == 0) 0 else newActiveTask.description.length
+        val newTaskList = tempList.filter { task -> task.id != deletedTaskId }
+        return TaskDeleted(
+            activeTaskId = newActiveTask.id,
+            newTasksList = newTaskList,
+            selectionPos = selectionPos
+        )
     }
 
     fun submitTaskAndCreateNewOne(
@@ -65,38 +84,15 @@ class TasksUseCase(
         newTaskId: Int,
         newTaskDescription: String,
     ): TaskAdded {
-        val newTask = NewTask(id = newTaskId, description = newTaskDescription)
+        val newTask = Task(id = newTaskId, description = newTaskDescription)
         val tempTasksList = currentTasksList.toMutableList()
         val currentSubmittedTask = tempTasksList[submittedTaskPosition]
-        val updatedSubmittedTask =
-            currentSubmittedTask.copy(newDescription = currentTaskDescription)
+        val updatedSubmittedTask = currentSubmittedTask.copy(description = currentTaskDescription)
         tempTasksList[submittedTaskPosition] = updatedSubmittedTask
         tempTasksList.add(newTaskPosition, newTask)
         return TaskAdded(newTasksList = tempTasksList, newTaskId)
     }
 
-}
-
-fun Task.copy(
-    newDescription: String? = null,
-    newIsCompleted: Boolean? = null
-): Task {
-    return when (this) {
-        is NewTask -> copy(
-            description = newDescription ?: description,
-            isCompleted = newIsCompleted ?: isCompleted
-        )
-
-        is SimpleTask -> copy(
-            description = newDescription ?: description,
-            isCompleted = newIsCompleted ?: isCompleted
-        )
-
-        is ComplexTask -> copy(
-            description = newDescription ?: description,
-            isCompleted = newIsCompleted ?: isCompleted
-        )
-    }
 }
 
 sealed interface SubmitTaskResult
@@ -106,3 +102,13 @@ data class TaskAdded(
 ) : SubmitTaskResult
 
 data object NoTaskAdded : SubmitTaskResult
+
+sealed interface DeleteTaskResult
+
+data class TaskDeleted(
+    val newTasksList: List<Task>,
+    val activeTaskId: Int,
+    val selectionPos: Int
+) : DeleteTaskResult
+
+data object NoTaskDeleted : DeleteTaskResult

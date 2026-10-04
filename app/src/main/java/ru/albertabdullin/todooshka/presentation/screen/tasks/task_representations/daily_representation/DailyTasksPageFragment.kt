@@ -78,6 +78,7 @@ class DailyTasksPageFragment : Fragment() {
                     submittedTaskDescriptionPart2
                 )
             },
+            onDeleteTask = dailyTasksPageViewModel::onTaskDeleted,
             isActiveTask = dailyTasksPageViewModel::isActiveTask
         )
         binding.tasksList.adapter = tasksAdapter

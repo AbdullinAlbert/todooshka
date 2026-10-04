@@ -13,7 +13,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.widget.doAfterTextChanged
 import com.google.android.material.checkbox.MaterialCheckBox
 import ru.albertabdullin.todooshka.R
-import ru.albertabdullin.todooshka.domain.entity.Task
+import ru.albertabdullin.todooshka.presentation.model.TaskUi
 
 class SimpleTaskFormView @JvmOverloads constructor(
     context: Context,
@@ -22,6 +22,8 @@ class SimpleTaskFormView @JvmOverloads constructor(
 ) : FrameLayout(context, attrs, defStyleAttr) {
 
     var onSubmitTask: ((String, String) -> Unit)? = null
+
+    var onDeleteTaskClick: ((String) -> Unit)? = null
 
     private var _taskDescriptionEditText: TaskEditText? = null
     private val taskDescriptionEditText: TaskEditText
@@ -36,7 +38,6 @@ class SimpleTaskFormView @JvmOverloads constructor(
     private val checkbox: MaterialCheckBox
         get() = _checkbox!!
 
-
     init {
         LayoutInflater.from(context).inflate(R.layout.simple_task_form, this, true)
 
@@ -47,18 +48,13 @@ class SimpleTaskFormView @JvmOverloads constructor(
         settingsButton.isEnabled = false
         checkbox.isEnabled = false
 
-        taskDescriptionEditText.onSubmitTask = submit@{
-            val taskDescriptionText = taskDescriptionEditText.text?.toString() ?: ""
-            val selectionStart = taskDescriptionEditText.selectionStart
-            val selectionEnd = taskDescriptionEditText.selectionEnd
-            if (selectionStart == -1 || selectionEnd == -1) {
-                return@submit
-            }
-
-            val part1 = taskDescriptionText.substring(0, selectionStart)
-            val part2 =
-                taskDescriptionText.substring(selectionEnd.coerceAtMost(taskDescriptionText.length))
+        taskDescriptionEditText.onSubmitTask = { part1, part2 ->
             onSubmitTask?.invoke(part1, part2)
+        }
+
+        taskDescriptionEditText.onDeleteTask = { deletedTaskDescription ->
+
+            onDeleteTaskClick?.invoke(deletedTaskDescription)
         }
 
         taskDescriptionEditText.doAfterTextChanged { _ ->
@@ -88,17 +84,17 @@ class SimpleTaskFormView @JvmOverloads constructor(
         }
     }
 
-    fun setTask(task: Task) {
+    fun init(task: TaskUi) {
         checkbox.isChecked = task.isCompleted
         if (taskDescriptionEditText.text?.toString() != task.description) {
             taskDescriptionEditText.setText(task.description)
-            taskDescriptionEditText.resetIsDeletingHandled()
+            taskDescriptionEditText.resetIsDeletingHandledFlag()
         }
     }
 
-    fun requestFocusOnTask() {
+    fun requestFocusOnTask(selectionPosition: Int) {
         taskDescriptionEditText.requestFocus()
-        taskDescriptionEditText.setSelection(0)
+        taskDescriptionEditText.setSelection(selectionPosition)
     }
 
     fun clearFocusOnTask() {
@@ -168,4 +164,5 @@ class SimpleTaskFormView @JvmOverloads constructor(
         }
 
     }
+
 }

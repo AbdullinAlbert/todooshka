@@ -7,26 +7,22 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import ru.albertabdullin.todooshka.databinding.SimpleTaskFormItemBinding
-import ru.albertabdullin.todooshka.domain.entity.ComplexTask
-import ru.albertabdullin.todooshka.domain.entity.NewTask
-import ru.albertabdullin.todooshka.domain.entity.SimpleTask
-import ru.albertabdullin.todooshka.domain.entity.Task
+import ru.albertabdullin.todooshka.presentation.model.TaskUi
+
 
 class TasksAdapter(
-    private val onSettingsClick: (Task) -> Unit,
+    private val onSettingsClick: (TaskUi) -> Unit,
     private val onSubmitTask: (Int, String, String) -> Unit,
-    private val isActiveTask: (Task) -> Boolean
-) : ListAdapter<Task, TasksAdapter.TaskViewHolder>(TaskDiffCallback) {
+    private val onDeleteTask: (Int, String) -> Unit,
+    private val isActiveTask: (TaskUi) -> Boolean
+) : ListAdapter<TaskUi, TasksAdapter.TaskViewHolder>(TaskDiffCallback) {
 
     private val simpleTaskViewType = 0
-    private val complexTaskViewType = 1
+    private val groupTaskViewType = 1
 
     override fun getItemViewType(position: Int): Int {
         val task = getItem(position)
-        return when (task) {
-            is NewTask, is SimpleTask -> simpleTaskViewType
-            is ComplexTask -> complexTaskViewType
-        }
+        return if (task.isGroupTask) groupTaskViewType else simpleTaskViewType
     }
 
     init {
@@ -61,8 +57,8 @@ class TasksAdapter(
 
     inner class SimpleTaskViewHolder(private val binding: SimpleTaskFormItemBinding) :
         TaskViewHolder(binding.root) {
-        override fun bind(task: Task) {
-            binding.simpleTaskForm.setTask(task)
+        override fun bind(task: TaskUi) {
+            binding.simpleTaskForm.init(task)
             binding.simpleTaskForm.setOnSettingsButtonClickListener {
                 onSettingsClick(task)
             }
@@ -74,8 +70,9 @@ class TasksAdapter(
                         submittedTaskDescriptionPart2
                     )
                 }
+            binding.simpleTaskForm.onDeleteTaskClick = { onDeleteTask(task.id, it) }
             if (isActiveTask(task)) {
-                binding.simpleTaskForm.requestFocusOnTask()
+                binding.simpleTaskForm.requestFocusOnTask(task.selectionPosition)
             } else {
                 binding.simpleTaskForm.clearFocusOnTask()
             }
@@ -83,18 +80,18 @@ class TasksAdapter(
     }
 
     open class TaskViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        open fun bind(task: Task) {}
+        open fun bind(task: TaskUi) {}
     }
 
-    private object TaskDiffCallback : DiffUtil.ItemCallback<Task>() {
+    private object TaskDiffCallback : DiffUtil.ItemCallback<TaskUi>() {
         override fun areItemsTheSame(
-            oldItem: Task, newItem: Task
+            oldItem: TaskUi, newItem: TaskUi
         ): Boolean {
             return oldItem.id == newItem.id
         }
 
         override fun areContentsTheSame(
-            oldItem: Task, newItem: Task
+            oldItem: TaskUi, newItem: TaskUi
         ): Boolean {
             return oldItem == newItem
         }

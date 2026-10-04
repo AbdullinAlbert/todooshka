@@ -1,4 +1,4 @@
-package ru.albertabdullin.todooshka.presentation.screen.tasks.model
+package ru.albertabdullin.todooshka.presentation.model
 
 import android.graphics.drawable.Drawable
 
