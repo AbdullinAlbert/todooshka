@@ -21,11 +21,13 @@ class TasksUseCase(
         if (currentTasksList.size == 1) return NoTaskDeleted
         val tempList = currentTasksList.toMutableList()
         val deletedTaskIndex = tempList.indexOfFirst { task -> task.id == deletedTaskId }
+        if (deletedTaskIndex == -1) return NoTaskDeleted
         if (deletedTaskIndex == 0 && deletedTaskDescription.isNotBlank()) return NoTaskDeleted
         val activeTaskIndex =
             if (deletedTaskIndex == 0) 1 else deletedTaskIndex - 1
         val newActiveTask = tempList[activeTaskIndex]
-        tempList[activeTaskIndex] = newActiveTask.copy(description = newActiveTask.description + deletedTaskDescription)
+        tempList[activeTaskIndex] =
+            newActiveTask.copy(description = newActiveTask.description + deletedTaskDescription)
         val selectionPos = if (deletedTaskIndex == 0) 0 else newActiveTask.description.length
         val newTaskList = tempList.filter { task -> task.id != deletedTaskId }
         return TaskDeleted(

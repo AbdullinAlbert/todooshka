@@ -88,7 +88,6 @@ class SimpleTaskFormView @JvmOverloads constructor(
         checkbox.isChecked = task.isCompleted
         if (taskDescriptionEditText.text?.toString() != task.description) {
             taskDescriptionEditText.setText(task.description)
-            taskDescriptionEditText.resetIsDeletingHandledFlag()
         }
     }
 

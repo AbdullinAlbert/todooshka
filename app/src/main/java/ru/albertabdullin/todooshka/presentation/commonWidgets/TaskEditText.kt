@@ -18,12 +18,6 @@ class TaskEditText @JvmOverloads constructor(
     var onSubmitTask: ((String, String) -> Unit)? = null
     var onDeleteTask: ((String) -> Unit)? = null
 
-    private var isDeletingHandled = false
-
-    fun resetIsDeletingHandledFlag() {
-        isDeletingHandled = false
-    }
-
     override fun onCreateInputConnection(outAttrs: EditorInfo): InputConnection? {
 
         val originalConnection = super.onCreateInputConnection(outAttrs) ?: return null
@@ -36,10 +30,6 @@ class TaskEditText @JvmOverloads constructor(
                     onSubmitTask?.invoke(textParts[0], textParts[1])
                     return true
                 }
-                val isTextNotBlank = text?.toString()?.isNotBlank() ?: false
-                if (isTextNotBlank) {
-                    isDeletingHandled = false
-                }
                 return super.commitText(text, newCursorPosition)
             }
 
@@ -50,16 +40,10 @@ class TaskEditText @JvmOverloads constructor(
                     event.action == KeyEvent.ACTION_DOWN &&
                     isFirstPos
                 ) {
-                    return if (!isDeletingHandled) {
-                        isDeletingHandled = true
-                        val textParts = textParts()
-                        if (textParts.isEmpty()) return super.sendKeyEvent(event)
-                        onDeleteTask?.invoke(textParts.last())
-                        true
-                    } else {
-                        false
-                    }
-
+                    val textParts = textParts()
+                    if (textParts.isEmpty()) return super.sendKeyEvent(event)
+                    onDeleteTask?.invoke(textParts.last())
+                    return true
                 }
 
                 return super.sendKeyEvent(event)
