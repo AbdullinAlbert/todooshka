@@ -34,6 +34,7 @@ class TaskEditText @JvmOverloads constructor(
             }
 
             override fun sendKeyEvent(event: KeyEvent): Boolean {
+
                 val isFirstPos = (selectionStart == selectionEnd) && (selectionStart == 0)
 
                 if (event.keyCode == KeyEvent.KEYCODE_DEL &&

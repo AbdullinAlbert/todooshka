@@ -14,11 +14,14 @@ class TasksAdapter(
     private val onSettingsClick: (TaskUi) -> Unit,
     private val onSubmitTask: (Int, String, String) -> Unit,
     private val onDeleteTask: (Int, String) -> Unit,
+    private val onTaskDescriptionChanged: (Int, String) -> Unit,
     private val isActiveTask: (TaskUi) -> Boolean
 ) : ListAdapter<TaskUi, TasksAdapter.TaskViewHolder>(TaskDiffCallback) {
 
     private val simpleTaskViewType = 0
     private val groupTaskViewType = 1
+
+    private data object TextChangedPayload
 
     override fun getItemViewType(position: Int): Int {
         val task = getItem(position)
@@ -55,6 +58,11 @@ class TasksAdapter(
         holder.bind(getItem(position))
     }
 
+    override fun onBindViewHolder(holder: TaskViewHolder, position: Int, payloads: List<Any?>) {
+        if (TextChangedPayload in payloads) return
+        super.onBindViewHolder(holder, position, payloads)
+    }
+
     inner class SimpleTaskViewHolder(private val binding: SimpleTaskFormItemBinding) :
         TaskViewHolder(binding.root) {
         override fun bind(task: TaskUi) {
@@ -65,12 +73,12 @@ class TasksAdapter(
             binding.simpleTaskForm.onSubmitTask =
                 { submittedTaskDescriptionPart1, submittedTaskDescriptionPart2 ->
                     onSubmitTask(
-                        task.id,
-                        submittedTaskDescriptionPart1,
-                        submittedTaskDescriptionPart2
+                        task.id, submittedTaskDescriptionPart1, submittedTaskDescriptionPart2
                     )
                 }
             binding.simpleTaskForm.onDeleteTaskClick = { onDeleteTask(task.id, it) }
+            binding.simpleTaskForm.onTextChanged =
+                { text -> onTaskDescriptionChanged(task.id, text) }
             if (isActiveTask(task)) {
                 binding.simpleTaskForm.requestFocusOnTask(task.selectionPosition)
             } else {
@@ -94,6 +102,13 @@ class TasksAdapter(
             oldItem: TaskUi, newItem: TaskUi
         ): Boolean {
             return oldItem == newItem
+        }
+
+        override fun getChangePayload(oldItem: TaskUi, newItem: TaskUi): Any? {
+            return if (
+                (oldItem != newItem) &&
+                (oldItem.copy(description = newItem.description) == newItem)
+            ) TextChangedPayload else null
         }
     }
 }

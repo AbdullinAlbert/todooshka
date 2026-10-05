@@ -71,13 +71,8 @@ class DailyTasksPageFragment : Fragment() {
     private fun setupTasksList() {
         tasksAdapter = TasksAdapter(
             onSettingsClick = { task -> },
-            onSubmitTask = { submittedTaskId, submittedTaskDescriptionPart1, submittedTaskDescriptionPart2 ->
-                dailyTasksPageViewModel.onTaskSubmitted(
-                    submittedTaskId,
-                    submittedTaskDescriptionPart1,
-                    submittedTaskDescriptionPart2
-                )
-            },
+            onSubmitTask = dailyTasksPageViewModel::onTaskSubmitted,
+            onTaskDescriptionChanged = dailyTasksPageViewModel::onTaskDescriptionChanged,
             onDeleteTask = dailyTasksPageViewModel::onTaskDeleted,
             isActiveTask = dailyTasksPageViewModel::isActiveTask
         )

@@ -4,13 +4,14 @@ import android.animation.ValueAnimator
 import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.Paint
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.FrameLayout
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.core.animation.doOnEnd
 import androidx.core.content.ContextCompat
-import androidx.core.widget.doAfterTextChanged
 import com.google.android.material.checkbox.MaterialCheckBox
 import ru.albertabdullin.todooshka.R
 import ru.albertabdullin.todooshka.presentation.model.TaskUi
@@ -25,6 +26,8 @@ class SimpleTaskFormView @JvmOverloads constructor(
 
     var onDeleteTaskClick: ((String) -> Unit)? = null
 
+    var onTextChanged: ((String) -> Unit)? = null
+
     private var _taskDescriptionEditText: TaskEditText? = null
     private val taskDescriptionEditText: TaskEditText
         get() = _taskDescriptionEditText!!
@@ -37,6 +40,30 @@ class SimpleTaskFormView @JvmOverloads constructor(
 
     private val checkbox: MaterialCheckBox
         get() = _checkbox!!
+
+    private val textWatcher = object : TextWatcher {
+        override fun afterTextChanged(s: Editable?) {
+            updateTaskFormState()
+            if (s != null) onTextChanged?.invoke(s.toString())
+        }
+
+        override fun beforeTextChanged(
+            s: CharSequence?,
+            start: Int,
+            count: Int,
+            after: Int
+        ) {
+        }
+
+        override fun onTextChanged(
+            s: CharSequence?,
+            start: Int,
+            before: Int,
+            count: Int
+        ) {
+        }
+
+    }
 
     init {
         LayoutInflater.from(context).inflate(R.layout.simple_task_form, this, true)
@@ -57,9 +84,7 @@ class SimpleTaskFormView @JvmOverloads constructor(
             onDeleteTaskClick?.invoke(deletedTaskDescription)
         }
 
-        taskDescriptionEditText.doAfterTextChanged { _ ->
-            updateTaskFormState()
-        }
+        taskDescriptionEditText.addTextChangedListener(textWatcher)
 
         checkbox.setOnCheckedChangeListener { _, _ ->
             updateTaskFormState()
@@ -86,8 +111,12 @@ class SimpleTaskFormView @JvmOverloads constructor(
 
     fun init(task: TaskUi) {
         checkbox.isChecked = task.isCompleted
+        checkbox.isEnabled = task.description.isNotBlank()
+        settingsButton.isEnabled = !task.isCompleted && task.description.isNotBlank()
         if (taskDescriptionEditText.text?.toString() != task.description) {
+            taskDescriptionEditText.removeTextChangedListener(textWatcher)
             taskDescriptionEditText.setText(task.description)
+            taskDescriptionEditText.addTextChangedListener(textWatcher)
         }
     }
 

@@ -73,6 +73,17 @@ class DailyTasksPageViewModel(
         }
     }
 
+    fun onTaskDescriptionChanged(taskId: Int, taskDescription: String) {
+        val tempList = _tasksList.value.toMutableList()
+        val taskIndex = tempList.indexOfFirst { task -> task.id == taskId }
+        if (taskIndex == -1) return
+        val updatedTask = tempList[taskIndex].copy(description = taskDescription)
+        tempList[taskIndex] = updatedTask
+        viewModelScope.launch {
+            _tasksList.tryEmit(tempList)
+        }
+    }
+
     fun onTaskDeleted(taskId: Int, taskDescription: String) {
         val result = tasksUseCase.deleteTask(
             currentTasksList = _tasksList.value.map { it.toDomain() },

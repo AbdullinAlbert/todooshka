@@ -33,10 +33,11 @@ class RecyclerViewDailyAdapter(
     }
 
     override fun onBindViewHolder(holder: DailyViewHolder, position: Int, payloads: List<Any?>) {
-        super.onBindViewHolder(holder, position, payloads)
         if (payloads.any { it == SelectionChanged }) {
             holder.updateColors(dailyDateRange.dateAt(position))
+            return
         }
+        super.onBindViewHolder(holder, position, payloads)
     }
 
     fun updateSelected(previousPos: Int, currentPos: Int) {
