@@ -50,6 +50,17 @@ class DailyTasksPageViewModel(
         return isActiveTask
     }
 
+    fun onTaskDescriptionChanged(taskId: Int, taskDescription: String) {
+        val tempList = _tasksList.value.toMutableList()
+        val taskIndex = tempList.indexOfFirst { task -> task.id == taskId }
+        if (taskIndex == -1) return
+        val updatedTask = tempList[taskIndex].copy(description = taskDescription)
+        tempList[taskIndex] = updatedTask
+        viewModelScope.launch {
+            _tasksList.tryEmit(tempList)
+        }
+    }
+
     fun onTaskSubmitted(
         taskId: Int,
         taskDescriptionPart1: String,
@@ -63,24 +74,14 @@ class DailyTasksPageViewModel(
         )
         when (result) {
             is TaskAdded -> {
+                activeTaskId = result.newTaskId
+                val newTaskUiList = createNewTaskUiList(newDomainTaskList = result.newTasksList)
                 viewModelScope.launch {
-                    activeTaskId = result.newTaskId
-                    _tasksList.tryEmit(result.newTasksList.map { it.toUi() })
+                    _tasksList.tryEmit(newTaskUiList)
                 }
             }
 
             else -> Unit
-        }
-    }
-
-    fun onTaskDescriptionChanged(taskId: Int, taskDescription: String) {
-        val tempList = _tasksList.value.toMutableList()
-        val taskIndex = tempList.indexOfFirst { task -> task.id == taskId }
-        if (taskIndex == -1) return
-        val updatedTask = tempList[taskIndex].copy(description = taskDescription)
-        tempList[taskIndex] = updatedTask
-        viewModelScope.launch {
-            _tasksList.tryEmit(tempList)
         }
     }
 
@@ -92,18 +93,35 @@ class DailyTasksPageViewModel(
         )
         when (result) {
             is TaskDeleted -> {
+                activeTaskId = result.activeTaskId
+                val newTaskUiList = createNewTaskUiList(
+                    selectionPos = result.selectionPos,
+                    newDomainTaskList = result.newTasksList
+                )
                 viewModelScope.launch {
-                    activeTaskId = result.activeTaskId
-                    _tasksList.tryEmit(result.newTasksList.map {
-                        val selectionPos =
-                            if (it.id == result.activeTaskId) result.selectionPos else 0
-                        it.toUi(selectionPos = selectionPos)
-                    })
+                    _tasksList.tryEmit(newTaskUiList)
                 }
             }
 
             else -> Unit
         }
+    }
+
+    private fun createNewTaskUiList(
+        selectionPos: Int = -1,
+        newDomainTaskList: List<Task>
+    ): List<TaskUi> {
+        val helperMap = _tasksList.value.associate { it.id to it.descriptionVersion }
+        val newTaskUiList = newDomainTaskList.map {
+            val updateDescriptionVersion = helperMap.getOrDefault(it.id, 0) + 1
+            val selectionPos = if (selectionPos < 0) 0
+            else if (it.id == activeTaskId) selectionPos else 0
+            it.toUi(
+                selectionPos = selectionPos,
+                updateDescriptionVersion = updateDescriptionVersion
+            )
+        }
+        return newTaskUiList
     }
 
     companion object {
@@ -120,14 +138,19 @@ class DailyTasksPageViewModel(
         }
     }
 
-    private fun Task.toUi(selectionPos: Int = 0, isCompleteEnabled: Boolean = true): TaskUi {
+    private fun Task.toUi(
+        selectionPos: Int = 0,
+        isCompleteEnabled: Boolean = true,
+        updateDescriptionVersion: Int = 0
+    ): TaskUi {
         return TaskUi(
             id = id,
             isCompleted = isCompleted,
             description = description,
+            descriptionVersion = updateDescriptionVersion,
             isCompleteEnabled = isCompleteEnabled,
             selectionPosition = selectionPos,
-            subTasks = subTasks.map { it.toUi() }
+            subTasks = subTasks.map { it.toUi(updateDescriptionVersion = updateDescriptionVersion) }
         )
     }
 

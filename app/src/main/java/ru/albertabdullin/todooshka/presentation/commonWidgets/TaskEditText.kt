@@ -23,33 +23,36 @@ class TaskEditText @JvmOverloads constructor(
         val originalConnection = super.onCreateInputConnection(outAttrs) ?: return null
 
         return object : InputConnectionWrapper(originalConnection, false) {
-            override fun commitText(text: CharSequence?, newCursorPosition: Int): Boolean {
-                if (text?.toString() == "\n") {
-                    val textParts = textParts()
-                    if (textParts.isEmpty()) return super.commitText(text, newCursorPosition)
-                    onSubmitTask?.invoke(textParts[0], textParts[1])
-                    return true
-                }
+            override fun commitText(
+                text: CharSequence?,
+                newCursorPosition: Int
+            ): Boolean {
+                if (text?.toString() == "\n" && handleEnter()) return true
                 return super.commitText(text, newCursorPosition)
             }
 
             override fun sendKeyEvent(event: KeyEvent): Boolean {
-
-                val isFirstPos = (selectionStart == selectionEnd) && (selectionStart == 0)
-
-                if (event.keyCode == KeyEvent.KEYCODE_DEL &&
-                    event.action == KeyEvent.ACTION_DOWN &&
-                    isFirstPos
-                ) {
-                    val textParts = textParts()
-                    if (textParts.isEmpty()) return super.sendKeyEvent(event)
-                    onDeleteTask?.invoke(textParts.last())
-                    return true
+                if (event.action == KeyEvent.ACTION_DOWN) {
+                    if (event.keyCode == KeyEvent.KEYCODE_ENTER && handleEnter()) return true
+                    val isFirstPos = (selectionStart == selectionEnd) && (selectionStart == 0)
+                    if (event.keyCode == KeyEvent.KEYCODE_DEL && isFirstPos) {
+                        val textParts = textParts()
+                        if (textParts.isEmpty()) return super.sendKeyEvent(event)
+                        onDeleteTask?.invoke(textParts.last())
+                        return true
+                    }
                 }
-
                 return super.sendKeyEvent(event)
             }
+
         }
+    }
+
+    private fun handleEnter(): Boolean {
+        val textParts = textParts()
+        if (textParts.isEmpty()) return false
+        onSubmitTask?.invoke(textParts[0], textParts[1])
+        return true
     }
 
     private fun textParts(): List<String> {
