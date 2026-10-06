@@ -69,11 +69,7 @@ class DailyRepresentationTasksFragment : Fragment() {
             ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
                 super.onPageSelected(position)
-                taskContainerViewModel.onNewDateIsSelected(
-                    dailyDateRange.dateAt(
-                        position
-                    )
-                )
+                taskContainerViewModel.onNewDateIsSelected(dailyDateRange.dateAt(position))
             }
         })
     }

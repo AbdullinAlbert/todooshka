@@ -37,8 +37,8 @@ class DailyTasksPageFragment : Fragment() {
     }
 
     private val taskContainerViewModel: TaskContainerViewModel by viewModels(
-        ownerProducer = { requireParentFragment().requireParentFragment() })
-
+        ownerProducer = { requireParentFragment().requireParentFragment() }
+    )
 
     companion object {
 
@@ -71,6 +71,7 @@ class DailyTasksPageFragment : Fragment() {
     private fun setupTasksList() {
         tasksAdapter = TasksAdapter(
             onSettingsClick = { task -> },
+            onFocusAtTaskDescription = taskContainerViewModel::onTaskDescriptionFocus,
             onSubmitTask = dailyTasksPageViewModel::onTaskSubmitted,
             onTaskDescriptionChanged = dailyTasksPageViewModel::onTaskDescriptionChanged,
             onDeleteTask = dailyTasksPageViewModel::onTaskDeleted,

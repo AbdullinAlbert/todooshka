@@ -29,5 +29,4 @@
         app:layout_constraintTop_toTopOf="parent"
         tools:listitem="@layout/task_tracker_daily_date_tab" />
 
-
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -15,6 +15,7 @@ class TasksAdapter(
     private val onSubmitTask: (Int, String, String) -> Unit,
     private val onDeleteTask: (Int, String) -> Unit,
     private val onTaskDescriptionChanged: (Int, String) -> Unit,
+    private val onFocusAtTaskDescription: (Boolean) -> Unit,
     private val isActiveTask: (TaskUi) -> Boolean
 ) : ListAdapter<TaskUi, TasksAdapter.TaskViewHolder>(TaskDiffCallback) {
 
@@ -67,6 +68,7 @@ class TasksAdapter(
         TaskViewHolder(binding.root) {
         override fun bind(task: TaskUi) {
             binding.simpleTaskForm.init(task)
+            binding.simpleTaskForm.onFocusAtTaskDescription = onFocusAtTaskDescription
             binding.simpleTaskForm.setOnSettingsButtonClickListener {
                 onSettingsClick(task)
             }

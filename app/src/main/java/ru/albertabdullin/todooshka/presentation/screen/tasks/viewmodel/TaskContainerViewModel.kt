@@ -26,6 +26,9 @@ class TaskContainerViewModel(
 
     private var firstDate = LocalDate.now()
 
+    private val _taskContainerState = MutableStateFlow(TaskTrackerState())
+    val taskContainerState: StateFlow<TaskTrackerState> = _taskContainerState
+
     init {
         viewModelScope.launch {
             taskRepository
@@ -102,6 +105,25 @@ class TaskContainerViewModel(
         )
     }
 
+    fun onTaskTrackerRepresentationChanged() {
+        val newRepresentation = _taskContainerState.value.representationTaskTrackerMode.inverse()
+        viewModelScope.launch {
+            _taskContainerState.tryEmit(
+                _taskContainerState.value.copy(representationTaskTrackerMode = newRepresentation)
+            )
+        }
+    }
+
+    fun onTaskDescriptionFocus(hasFocus: Boolean) {
+        if (hasFocus) {
+            viewModelScope.launch {
+                _taskContainerState.tryEmit(
+                    _taskContainerState.value.copy(taskTrackerWorkMode = TaskTrackerWorkMode.EDIT)
+                )
+            }
+        }
+    }
+
     companion object {
         private const val SELECTED_DATE_KEY = "SELECTED_DATE_KEY"
 
@@ -118,3 +140,23 @@ class TaskContainerViewModel(
     }
 
 }
+
+enum class TaskTrackerWorkMode {
+    READ, EDIT, SEARCH,
+}
+
+enum class RepresentationTaskTrackerMode {
+    DAILY, WEEKLY;
+
+    fun inverse(): RepresentationTaskTrackerMode {
+        return when (this) {
+            DAILY -> WEEKLY
+            WEEKLY -> DAILY
+        }
+    }
+}
+
+data class TaskTrackerState(
+    val representationTaskTrackerMode: RepresentationTaskTrackerMode = RepresentationTaskTrackerMode.DAILY,
+    val taskTrackerWorkMode: TaskTrackerWorkMode = TaskTrackerWorkMode.READ
+)

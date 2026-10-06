@@ -28,6 +28,8 @@ class SimpleTaskFormView @JvmOverloads constructor(
 
     var onTextChanged: ((String) -> Unit)? = null
 
+    var onFocusAtTaskDescription: ((Boolean) -> Unit)? = null
+
     private var _taskDescriptionEditText: TaskEditText? = null
     private val taskDescriptionEditText: TaskEditText
         get() = _taskDescriptionEditText!!
@@ -74,6 +76,9 @@ class SimpleTaskFormView @JvmOverloads constructor(
 
         settingsButton.isEnabled = false
         checkbox.isEnabled = false
+
+        taskDescriptionEditText.onFocusChangeListener =
+            OnFocusChangeListener { _, hasFocus -> onFocusAtTaskDescription?.invoke(hasFocus) }
 
         taskDescriptionEditText.onSubmitTask = { part1, part2 ->
             onSubmitTask?.invoke(part1, part2)
