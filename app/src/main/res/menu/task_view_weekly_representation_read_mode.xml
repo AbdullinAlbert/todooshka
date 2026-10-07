@@ -7,7 +7,8 @@
         android:title="@string/select_date"
         app:showAsAction="always" />
     <item
-        android:id="@+id/task_tracker_representation_menu_item"
-        android:title=""
+        android:id="@+id/task_tracker_daily_representation_menu_item"
+        android:icon="@drawable/date_day_24dp"
+        android:title="@string/daily_task_tracker"
         app:showAsAction="always" />
 </menu>

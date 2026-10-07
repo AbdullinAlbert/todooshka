@@ -8,6 +8,9 @@
     <string name="daily_task_representation_mode">Режим ежедневника</string>
     <string name="weekly_task_representation_mode">Режим еженедельника</string>
     <string name="select_date">Выбрать дату</string>
+    <string name="save_tasks">Сохранить задачи</string>
+    <string name="redo_action">Повторить отмененное действие</string>
+    <string name="undo_action">Отменить последнее действие</string>
     <string name="create_simple_task">Создайте задачу</string>
     <string name="simple_task_settings_button_content_description">Индивидуальные настройки задачи</string>
 </resources>

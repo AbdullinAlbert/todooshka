@@ -114,6 +114,14 @@ class TaskContainerViewModel(
         }
     }
 
+    fun onBackToReadMode() {
+        viewModelScope.launch {
+            _taskContainerState.tryEmit(
+                _taskContainerState.value.copy(taskTrackerWorkMode = TaskTrackerWorkMode.READ)
+            )
+        }
+    }
+
     fun onTaskDescriptionFocus(hasFocus: Boolean) {
         if (hasFocus) {
             viewModelScope.launch {

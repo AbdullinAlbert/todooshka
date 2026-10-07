@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/task_tracker_select_date_menu_item"
+        android:icon="@drawable/calendar_24dp"
+        android:title="@string/select_date"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/task_tracker_weekly_representation_menu_item"
+        android:icon="@drawable/date_week_24dp"
+        android:title="@string/weekly_task_tracker"
+        app:showAsAction="always" />
+</menu>

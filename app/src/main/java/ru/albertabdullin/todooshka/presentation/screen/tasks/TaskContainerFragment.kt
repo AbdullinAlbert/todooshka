@@ -7,6 +7,7 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.add
@@ -15,6 +16,8 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import ru.albertabdullin.todooshka.R
 import ru.albertabdullin.todooshka.databinding.TaskContainerBinding
@@ -24,22 +27,13 @@ import ru.albertabdullin.todooshka.presentation.dialog.datepicker.model.Availabl
 import ru.albertabdullin.todooshka.presentation.extensions.diContainer
 import ru.albertabdullin.todooshka.presentation.screen.tasks.task_representations.daily_representation.DailyRepresentationTasksFragment
 import ru.albertabdullin.todooshka.presentation.screen.tasks.task_representations.weekly_representation.WeeklyRepresentationTasksFragment
+import ru.albertabdullin.todooshka.presentation.screen.tasks.viewmodel.RepresentationTaskTrackerMode
 import ru.albertabdullin.todooshka.presentation.screen.tasks.viewmodel.TaskContainerViewModel
+import ru.albertabdullin.todooshka.presentation.screen.tasks.viewmodel.TaskTrackerWorkMode
 import java.time.Instant
 import java.time.ZoneOffset
 
 class TaskContainerFragment : Fragment() {
-
-    private enum class RepresentationTaskTrackerMode {
-        Daily, Weekly
-    }
-
-    private var representationTaskTrackerMode: RepresentationTaskTrackerMode =
-        RepresentationTaskTrackerMode.Daily
-
-    private companion object {
-        const val REPRESENTATION_TASK_MODE_KEY = "REPRESENTATION_TASK_MODE"
-    }
 
     private var _binding: TaskContainerBinding? = null
 
@@ -51,6 +45,69 @@ class TaskContainerFragment : Fragment() {
         )
     }
 
+    private val editModeMenuProvider = object : MenuProvider {
+        override fun onCreateMenu(
+            menu: Menu,
+            menuInflater: MenuInflater
+        ) {
+            menuInflater.inflate(R.menu.task_edit_mode, menu)
+        }
+
+        override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+            return when (menuItem.itemId) {
+                R.id.undo_action_menu_item -> true
+                R.id.redo_action_menu_item -> true
+                R.id.save_tasks_menu_item -> true
+                else -> false
+            }
+        }
+
+    }
+
+    private val dailyMenuProviderReadMode = object : MenuProvider {
+        override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+            menuInflater.inflate(R.menu.task_view_daily_representation_read_mode, menu)
+        }
+
+        override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+            when (menuItem.itemId) {
+                R.id.task_tracker_select_date_menu_item -> {
+                    taskContainerViewModel.openCalendarDialogButtonIsClicked()
+                    return true
+                }
+
+                R.id.task_tracker_weekly_representation_menu_item -> {
+                    taskContainerViewModel.onTaskTrackerRepresentationChanged()
+                    return true
+                }
+
+                else -> return false
+            }
+        }
+    }
+
+    private val weeklyMenuProviderReadMode = object : MenuProvider {
+        override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+            menuInflater.inflate(R.menu.task_view_weekly_representation_read_mode, menu)
+        }
+
+        override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+            when (menuItem.itemId) {
+                R.id.task_tracker_select_date_menu_item -> {
+                    taskContainerViewModel.openCalendarDialogButtonIsClicked()
+                    return true
+                }
+
+                R.id.task_tracker_daily_representation_menu_item -> {
+                    taskContainerViewModel.onTaskTrackerRepresentationChanged()
+                    return true
+                }
+
+                else -> return false
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         taskContainerViewModel
@@ -59,19 +116,14 @@ class TaskContainerFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
-        savedInstanceState?.also {
-            representationTaskTrackerMode =
-                RepresentationTaskTrackerMode.valueOf(it.getString(REPRESENTATION_TASK_MODE_KEY)!!)
-        }
-
         _binding = TaskContainerBinding.inflate(inflater)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        initToolbar()
-        initTasksRepresentation(savedInstanceState)
+        initToolBar()
+        initScreen()
         collectOpenCalendarDialogEvents()
     }
 
@@ -101,91 +153,132 @@ class TaskContainerFragment : Fragment() {
         }
     }
 
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        outState.putString(REPRESENTATION_TASK_MODE_KEY, representationTaskTrackerMode.name)
-    }
-
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
     }
 
-    private fun initTasksRepresentation(savedInstanceState: Bundle?) {
-        if (savedInstanceState == null) {
-            childFragmentManager.commitNow {
-                setReorderingAllowed(true)
-                add<DailyRepresentationTasksFragment>(
-                    R.id.task_container, tag = RepresentationTaskTrackerMode.Daily.name
-                )
+    private fun initTasksRepresentation() {
+        childFragmentManager.commitNow {
+            setReorderingAllowed(true)
+            add<DailyRepresentationTasksFragment>(
+                R.id.task_container,
+                tag = RepresentationTaskTrackerMode.DAILY.name,
+            )
+        }
+    }
+
+    private fun initToolBar() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                taskContainerViewModel.taskContainerState
+                    .map { it }
+                    .collect {
+                        when (it.taskTrackerWorkMode) {
+                            TaskTrackerWorkMode.READ -> {
+                                binding.taskTrackerToolbar.setNavigationIcon(null)
+                                binding.taskTrackerToolbar.setNavigationOnClickListener(null)
+                                binding.taskTrackerToolbar.removeMenuProvider(editModeMenuProvider)
+                                when (it.representationTaskTrackerMode) {
+                                    RepresentationTaskTrackerMode.DAILY -> {
+
+                                        binding.taskTrackerToolbar.title =
+                                            getString(R.string.daily_task_tracker)
+                                        binding.taskTrackerToolbar.removeMenuProvider(
+                                            weeklyMenuProviderReadMode
+                                        )
+                                        binding.taskTrackerToolbar.addMenuProvider(
+                                            dailyMenuProviderReadMode
+                                        )
+                                    }
+
+                                    RepresentationTaskTrackerMode.WEEKLY -> {
+                                        binding.taskTrackerToolbar.title =
+                                            getString(R.string.weekly_task_tracker)
+                                        binding.taskTrackerToolbar.removeMenuProvider(
+                                            dailyMenuProviderReadMode
+                                        )
+                                        binding.taskTrackerToolbar.addMenuProvider(
+                                            weeklyMenuProviderReadMode
+                                        )
+                                    }
+                                }
+                            }
+
+                            TaskTrackerWorkMode.EDIT -> {
+                                binding.taskTrackerToolbar.setNavigationIcon(
+                                    ResourcesCompat.getDrawable(
+                                        resources,
+                                        R.drawable.arrow_back_24dp,
+                                        null
+                                    )
+                                )
+                                binding.taskTrackerToolbar.setNavigationOnClickListener {
+                                    taskContainerViewModel.onBackToReadMode()
+                                }
+                                binding.taskTrackerToolbar.title = ""
+                                binding.taskTrackerToolbar.removeMenuProvider(
+                                    dailyMenuProviderReadMode
+                                )
+                                binding.taskTrackerToolbar.removeMenuProvider(
+                                    weeklyMenuProviderReadMode
+                                )
+                                binding.taskTrackerToolbar.addMenuProvider(editModeMenuProvider)
+                            }
+
+                            TaskTrackerWorkMode.SEARCH -> {
+
+                            }
+                        }
+                    }
             }
         }
     }
 
-    private fun initToolbar() {
-        binding.taskTrackerToolbar.addMenuProvider(
-            object : MenuProvider {
-                override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-                    menuInflater.inflate(R.menu.task_view_representation, menu)
-                    val menuItem = menu.findItem(R.id.task_tracker_representation_menu_item)
-                    if (representationTaskTrackerMode == RepresentationTaskTrackerMode.Daily) {
-                        setupToolbarForDailyRepresentation(menuItem)
-                    } else {
-                        setupToolbarForWeeklyRepresentation(menuItem)
-                    }
+    private fun initScreen() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                taskContainerViewModel.taskContainerState
+                    .map { it.representationTaskTrackerMode }
+                    .distinctUntilChanged()
+                    .collect {
+                        val dailyFragment =
+                            childFragmentManager.findFragmentByTag(
+                                RepresentationTaskTrackerMode.DAILY.name
+                            )
+                        val weeklyFragment =
+                            childFragmentManager.findFragmentByTag(
+                                RepresentationTaskTrackerMode.WEEKLY.name
+                            )
 
-                }
+                        when (it) {
+                            RepresentationTaskTrackerMode.DAILY -> {
+                                if (dailyFragment == null) {
+                                    initTasksRepresentation()
+                                } else {
+                                    setupTaskTrackerDailyRepresentation(
+                                        dailyFragment = dailyFragment,
+                                        weeklyFragment = weeklyFragment!!
+                                    )
+                                }
+                            }
 
-                override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-                    when (menuItem.itemId) {
-                        R.id.task_tracker_select_date_menu_item -> {
-                            taskContainerViewModel.openCalendarDialogButtonIsClicked()
-                            return true
+                            RepresentationTaskTrackerMode.WEEKLY -> {
+                                setupTaskTrackerWeeklyRepresentation(
+                                    dailyFragment = dailyFragment!!,
+                                    weeklyFragment = weeklyFragment
+                                )
+                            }
                         }
-
-                        R.id.task_tracker_representation_menu_item -> {
-                            changeTaskTrackerRepresentationMode(menuItem)
-                            return true
-                        }
-
-                        else -> return false
                     }
-                }
-            },
-        )
-    }
-
-    private fun changeTaskTrackerRepresentationMode(item: MenuItem) {
-        val dailyFragment =
-            childFragmentManager.findFragmentByTag(RepresentationTaskTrackerMode.Daily.name)
-        val weeklyFragment =
-            childFragmentManager.findFragmentByTag(RepresentationTaskTrackerMode.Weekly.name)
-        when (representationTaskTrackerMode) {
-            RepresentationTaskTrackerMode.Daily -> {
-                dailyRepresentationMenuItemIsClicked(
-                    item = item,
-                    dailyFragment = dailyFragment!!,
-                    weeklyFragment = weeklyFragment
-                )
-            }
-
-            RepresentationTaskTrackerMode.Weekly -> {
-                weeklyRepresentationMenuItemIsClicked(
-                    item = item,
-                    dailyFragment = dailyFragment!!,
-                    weeklyFragment = weeklyFragment!!
-                )
             }
         }
     }
 
-    private fun weeklyRepresentationMenuItemIsClicked(
-        item: MenuItem,
+    private fun setupTaskTrackerDailyRepresentation(
         dailyFragment: Fragment,
         weeklyFragment: Fragment
     ) {
-        setupToolbarForDailyRepresentation(item)
-        representationTaskTrackerMode = RepresentationTaskTrackerMode.Daily
         childFragmentManager.commitNow {
             setReorderingAllowed(true)
 
@@ -201,44 +294,24 @@ class TaskContainerFragment : Fragment() {
         }
     }
 
-    private fun setupToolbarForDailyRepresentation(item: MenuItem) {
-        item.title = getString(R.string.weekly_task_representation_mode)
-        item.setIcon(R.drawable.date_week_24dp)
-        binding.taskTrackerToolbar.title =
-            getString(R.string.daily_task_tracker)
-    }
-
-    private fun setupToolbarForWeeklyRepresentation(item: MenuItem) {
-        item.title = getString(R.string.daily_task_representation_mode)
-        item.setIcon(R.drawable.date_day_24dp)
-        binding.taskTrackerToolbar.title = getString(R.string.weekly_task_tracker)
-    }
-
-    private fun dailyRepresentationMenuItemIsClicked(
-        item: MenuItem,
+    private fun setupTaskTrackerWeeklyRepresentation(
         dailyFragment: Fragment,
         weeklyFragment: Fragment?
     ) {
-        setupToolbarForWeeklyRepresentation(item)
-        representationTaskTrackerMode = RepresentationTaskTrackerMode.Weekly
         childFragmentManager.commitNow {
             setReorderingAllowed(true)
 
             hide(dailyFragment)
-            setMaxLifecycle(
-                dailyFragment, Lifecycle.State.STARTED
-            )
+            setMaxLifecycle(dailyFragment, Lifecycle.State.STARTED)
 
             if (weeklyFragment == null) {
                 add<WeeklyRepresentationTasksFragment>(
-                    R.id.task_container, tag = RepresentationTaskTrackerMode.Weekly.name
+                    R.id.task_container,
+                    RepresentationTaskTrackerMode.WEEKLY.name
                 )
             } else {
                 show(weeklyFragment)
-                setMaxLifecycle(
-                    weeklyFragment,
-                    Lifecycle.State.RESUMED
-                )
+                setMaxLifecycle(weeklyFragment, Lifecycle.State.RESUMED)
             }
         }
     }
