@@ -174,19 +174,22 @@ class TaskContainerFragment : Fragment() {
                 taskContainerViewModel.taskContainerState
                     .map { it }
                     .collect {
+                        binding.taskTrackerToolbar.removeMenuProvider(
+                            dailyMenuProviderReadMode
+                        )
+                        binding.taskTrackerToolbar.removeMenuProvider(
+                            weeklyMenuProviderReadMode
+                        )
+                        binding.taskTrackerToolbar.removeMenuProvider(editModeMenuProvider)
                         when (it.taskTrackerWorkMode) {
                             TaskTrackerWorkMode.READ -> {
                                 binding.taskTrackerToolbar.setNavigationIcon(null)
                                 binding.taskTrackerToolbar.setNavigationOnClickListener(null)
-                                binding.taskTrackerToolbar.removeMenuProvider(editModeMenuProvider)
                                 when (it.representationTaskTrackerMode) {
                                     RepresentationTaskTrackerMode.DAILY -> {
 
                                         binding.taskTrackerToolbar.title =
                                             getString(R.string.daily_task_tracker)
-                                        binding.taskTrackerToolbar.removeMenuProvider(
-                                            weeklyMenuProviderReadMode
-                                        )
                                         binding.taskTrackerToolbar.addMenuProvider(
                                             dailyMenuProviderReadMode
                                         )
@@ -195,9 +198,6 @@ class TaskContainerFragment : Fragment() {
                                     RepresentationTaskTrackerMode.WEEKLY -> {
                                         binding.taskTrackerToolbar.title =
                                             getString(R.string.weekly_task_tracker)
-                                        binding.taskTrackerToolbar.removeMenuProvider(
-                                            dailyMenuProviderReadMode
-                                        )
                                         binding.taskTrackerToolbar.addMenuProvider(
                                             weeklyMenuProviderReadMode
                                         )
@@ -217,12 +217,6 @@ class TaskContainerFragment : Fragment() {
                                     taskContainerViewModel.onBackToReadMode()
                                 }
                                 binding.taskTrackerToolbar.title = ""
-                                binding.taskTrackerToolbar.removeMenuProvider(
-                                    dailyMenuProviderReadMode
-                                )
-                                binding.taskTrackerToolbar.removeMenuProvider(
-                                    weeklyMenuProviderReadMode
-                                )
                                 binding.taskTrackerToolbar.addMenuProvider(editModeMenuProvider)
                             }
 
@@ -258,7 +252,7 @@ class TaskContainerFragment : Fragment() {
                                 } else {
                                     setupTaskTrackerDailyRepresentation(
                                         dailyFragment = dailyFragment,
-                                        weeklyFragment = weeklyFragment!!
+                                        weeklyFragment = weeklyFragment
                                     )
                                 }
                             }
@@ -277,15 +271,17 @@ class TaskContainerFragment : Fragment() {
 
     private fun setupTaskTrackerDailyRepresentation(
         dailyFragment: Fragment,
-        weeklyFragment: Fragment
+        weeklyFragment: Fragment?
     ) {
         childFragmentManager.commitNow {
             setReorderingAllowed(true)
 
-            hide(weeklyFragment)
-            setMaxLifecycle(
-                weeklyFragment, Lifecycle.State.STARTED
-            )
+            if (weeklyFragment != null) {
+                hide(weeklyFragment)
+                setMaxLifecycle(
+                    weeklyFragment, Lifecycle.State.STARTED
+                )
+            }
 
             show(dailyFragment)
             setMaxLifecycle(
