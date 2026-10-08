@@ -84,7 +84,7 @@ class DailyTasksPageFragment : Fragment() {
 
     private fun subscribeToState() {
         viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            viewLifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
                 dailyTasksPageViewModel.taskList.collect {
                     if (tasksAdapter == null) return@collect
                     tasksAdapter!!.submitList(it) {

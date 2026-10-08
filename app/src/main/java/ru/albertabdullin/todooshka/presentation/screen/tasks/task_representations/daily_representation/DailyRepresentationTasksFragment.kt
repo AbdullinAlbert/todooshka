@@ -15,13 +15,15 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.viewpager2.widget.ViewPager2
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import ru.albertabdullin.todooshka.R
 import ru.albertabdullin.todooshka.databinding.DailyRepresentationTaskFragmentBinding
 import ru.albertabdullin.todooshka.domain.date_operations.DailyDateRange
 import ru.albertabdullin.todooshka.domain.date_operations.LAST_AVAILABLE_DATE
-import ru.albertabdullin.todooshka.presentation.screen.tasks.date_tab_scroll.CenteredDateTabSmoothScroller
 import ru.albertabdullin.todooshka.presentation.model.TabPropertyValues
+import ru.albertabdullin.todooshka.presentation.screen.tasks.date_tab_scroll.CenteredDateTabSmoothScroller
 import ru.albertabdullin.todooshka.presentation.screen.tasks.task_representations.daily_representation.adapters.DailyTasksPageViewPagerAdapter
 import ru.albertabdullin.todooshka.presentation.screen.tasks.task_representations.daily_representation.adapters.RecyclerViewDailyAdapter
 import ru.albertabdullin.todooshka.presentation.screen.tasks.value_object.DateSelectionChangedArgs
@@ -40,6 +42,10 @@ class DailyRepresentationTasksFragment : Fragment() {
     private val taskContainerViewModel: TaskContainerViewModel by viewModels(
         ownerProducer = { requireParentFragment() })
 
+    private var currentSelectedDate: Long = Long.MIN_VALUE
+
+    private val currentSelectedDateKey = "currentSelectedDateKey"
+
     private val dateTimeFormatter =
         DateTimeFormatter.ofPattern("d MMMM, EEEE", Locale.forLanguageTag("ru-RU"))
 
@@ -52,6 +58,8 @@ class DailyRepresentationTasksFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        currentSelectedDate =
+            savedInstanceState?.getLong(currentSelectedDateKey, Long.MIN_VALUE) ?: Long.MIN_VALUE
         setupTabAdapter()
         collectScrollToDateEvents()
         setupViewPager()
@@ -60,6 +68,11 @@ class DailyRepresentationTasksFragment : Fragment() {
             it.getLocationInWindow(location)
             taskContainerViewModel.updateDateTabBottomCoordinate(location[1] + it.height)
         }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putLong(currentSelectedDateKey, currentSelectedDate)
+        super.onSaveInstanceState(outState)
     }
 
     private fun setupViewPager() {
@@ -108,10 +121,15 @@ class DailyRepresentationTasksFragment : Fragment() {
     private fun collectScrollToDateEvents() {
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.RESUMED) {
-                taskContainerViewModel.scrollDateEvent.collect { dateSelectionChangedArs ->
-                    scrollEventForTabs(dateSelectionChangedArs)
-                    scrollEventForPages(dateSelectionChangedArs)
-                }
+                taskContainerViewModel.taskContainerState
+                    .map { it.dateSelectionChangedArgs }
+                    .filter { !it.isDefault }
+                    .collect { dateSelectionChangedArs ->
+                        if (dateSelectionChangedArs.currentSelectedDayEpoch == currentSelectedDate) return@collect
+                        currentSelectedDate = dateSelectionChangedArs.currentSelectedDayEpoch
+                        scrollEventForTabs(dateSelectionChangedArs)
+                        scrollEventForPages(dateSelectionChangedArs)
+                    }
             }
         }
     }

@@ -39,12 +39,12 @@ class TaskContainerViewModel(
         }
     }
 
-    private val _dateTabBottomCoordinate = MutableStateFlow<Int>(-1)
+    private val _dateTabBottomCoordinate = MutableStateFlow(-1)
     val dateTabBottomCoordinate: StateFlow<Int> = _dateTabBottomCoordinate
 
     fun updateDateTabBottomCoordinate(dateBottomCoordinate: Int) {
         viewModelScope.launch {
-            _dateTabBottomCoordinate.tryEmit(dateBottomCoordinate)
+            _dateTabBottomCoordinate.emit(dateBottomCoordinate)
         }
     }
 
@@ -58,13 +58,6 @@ class TaskContainerViewModel(
             return selectedDate
         }
 
-    private val _scrollDateTabEvent = MutableSharedFlow<DateSelectionChangedArgs>(
-        replay = 0,
-        extraBufferCapacity = 1,
-        onBufferOverflow = BufferOverflow.DROP_OLDEST
-    )
-
-    val scrollDateEvent: SharedFlow<DateSelectionChangedArgs> = _scrollDateTabEvent
 
     private val _openCalendarEvent = MutableSharedFlow<DatePickerArgs>(
         replay = 0,
@@ -76,12 +69,16 @@ class TaskContainerViewModel(
 
     fun onNewDateIsSelected(selectedDate: LocalDate) {
         val (previous, current) = updateSelectedDate(selectedDate) ?: return
-        _scrollDateTabEvent.tryEmit(
-            DateSelectionChangedArgs(
-                previous,
-                current,
+        viewModelScope.launch {
+            _taskContainerState.emit(
+                _taskContainerState.value.copy(
+                    dateSelectionChangedArgs = DateSelectionChangedArgs(
+                        previous,
+                        current,
+                    )
+                )
             )
-        )
+        }
     }
 
     private fun updateSelectedDate(selectedDate: LocalDate): Pair<Long, Long>? {
@@ -97,18 +94,20 @@ class TaskContainerViewModel(
     }
 
     fun openCalendarDialogButtonIsClicked() {
-        _openCalendarEvent.tryEmit(
-            DatePickerArgs(
-                firstDate = firstDate,
-                selectedDate = LocalDate.ofEpochDay(selectedDateEpochDay)
+        viewModelScope.launch {
+            _openCalendarEvent.emit(
+                DatePickerArgs(
+                    firstDate = firstDate,
+                    selectedDate = LocalDate.ofEpochDay(selectedDateEpochDay)
+                )
             )
-        )
+        }
     }
 
     fun onTaskTrackerRepresentationChanged() {
         val newRepresentation = _taskContainerState.value.representationTaskTrackerMode.inverse()
         viewModelScope.launch {
-            _taskContainerState.tryEmit(
+            _taskContainerState.emit(
                 _taskContainerState.value.copy(representationTaskTrackerMode = newRepresentation)
             )
         }
@@ -116,7 +115,7 @@ class TaskContainerViewModel(
 
     fun onBackToReadMode() {
         viewModelScope.launch {
-            _taskContainerState.tryEmit(
+            _taskContainerState.emit(
                 _taskContainerState.value.copy(taskTrackerWorkMode = TaskTrackerWorkMode.READ)
             )
         }
@@ -125,7 +124,7 @@ class TaskContainerViewModel(
     fun onTaskDescriptionFocus(hasFocus: Boolean) {
         if (hasFocus) {
             viewModelScope.launch {
-                _taskContainerState.tryEmit(
+                _taskContainerState.emit(
                     _taskContainerState.value.copy(taskTrackerWorkMode = TaskTrackerWorkMode.EDIT)
                 )
             }
@@ -166,5 +165,6 @@ enum class RepresentationTaskTrackerMode {
 
 data class TaskTrackerState(
     val representationTaskTrackerMode: RepresentationTaskTrackerMode = RepresentationTaskTrackerMode.DAILY,
-    val taskTrackerWorkMode: TaskTrackerWorkMode = TaskTrackerWorkMode.READ
+    val taskTrackerWorkMode: TaskTrackerWorkMode = TaskTrackerWorkMode.READ,
+    val dateSelectionChangedArgs: DateSelectionChangedArgs = DateSelectionChangedArgs()
 )

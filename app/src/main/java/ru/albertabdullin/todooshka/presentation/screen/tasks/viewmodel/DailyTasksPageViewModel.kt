@@ -34,7 +34,7 @@ class DailyTasksPageViewModel(
             val list = tasksUseCase
                 .getTasks(dateForPage)
                 .map { it.toUi() }
-            _tasksList.tryEmit(list)
+            _tasksList.emit(list)
         }
     }
 
@@ -57,7 +57,7 @@ class DailyTasksPageViewModel(
         val updatedTask = tempList[taskIndex].copy(description = taskDescription)
         tempList[taskIndex] = updatedTask
         viewModelScope.launch {
-            _tasksList.tryEmit(tempList)
+            _tasksList.emit(tempList)
         }
     }
 
@@ -77,7 +77,7 @@ class DailyTasksPageViewModel(
                 activeTaskId = result.newTaskId
                 val newTaskUiList = createNewTaskUiList(newDomainTaskList = result.newTasksList)
                 viewModelScope.launch {
-                    _tasksList.tryEmit(newTaskUiList)
+                    _tasksList.emit(newTaskUiList)
                 }
             }
 
@@ -99,7 +99,7 @@ class DailyTasksPageViewModel(
                     newDomainTaskList = result.newTasksList
                 )
                 viewModelScope.launch {
-                    _tasksList.tryEmit(newTaskUiList)
+                    _tasksList.emit(newTaskUiList)
                 }
             }
 
