@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:clipChildren="false"
-    tools:context=".presentation.screen.main_screen_container.MainActivity">
+    tools:context=".presentation.screen.mainScreenContainer.MainActivity">
 
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/main_view_pager"
@@ -23,6 +23,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/white"
+        app:labelVisibilityMode="labeled"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

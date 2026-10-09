@@ -1,9 +1,8 @@
-package ru.albertabdullin.todooshka.presentation.screen.main_screen_container
+package ru.albertabdullin.todooshka.presentation.screen.mainScreenContainer
 
 import android.content.res.Configuration.ORIENTATION_LANDSCAPE
 import android.graphics.Color
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -74,19 +73,13 @@ class MainActivity : AppCompatActivity() {
         binding.mainBottomNavigation.setOnItemSelectedListener { item ->
             val position = when (item.itemId) {
                 R.id.tasks -> 0
-                R.id.notes -> 1
-                R.id.settings -> 2
+                R.id.aiAssistant -> 1
+                R.id.notes -> 2
+                R.id.settings -> 3
                 else -> return@setOnItemSelectedListener false
             }
             binding.mainViewPager.currentItem = position
             return@setOnItemSelectedListener true
-        }
-        binding.mainBottomNavigation.addOnLayoutChangeListener { v, _, _, _, _, _, _, _, _ ->
-
-            Log.d(
-                "BNB",
-                "height=${v.height}, paddingBottom=${v.paddingBottom}"
-            )
         }
     }
 }

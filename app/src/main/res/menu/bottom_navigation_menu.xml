@@ -6,14 +6,21 @@
         android:icon="@drawable/baseline_checklist_24"
         android:title="@string/tasks"
         app:showAsAction="always" />
+
+    <item
+        android:id="@+id/aiAssistant"
+        android:icon="@drawable/person_24dp"
+        android:title="@string/ai_assistant"
+        app:showAsAction="always" />
+
     <item
         android:id="@+id/notes"
         android:icon="@drawable/stylus_24dp"
         android:title="@string/notes"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="always" />
     <item
         android:id="@+id/settings"
         android:icon="@drawable/settings_24dp"
         android:title="@string/settings"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="always" />
 </menu>

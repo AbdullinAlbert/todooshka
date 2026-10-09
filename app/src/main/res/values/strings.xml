@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">Todooshka</string>
     <string name="tasks">Задачи</string>
+    <string name="ai_assistant">ИИ-ассистент</string>
     <string name="notes">Заметки</string>
     <string name="settings">Настройки</string>
     <string name="daily_task_tracker">Ежедневник</string>

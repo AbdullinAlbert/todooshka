@@ -12,7 +12,7 @@
         android:theme="@style/Theme.Todooshka"
         android:name=".App">
         <activity
-            android:name=".presentation.screen.main_screen_container.MainActivity"
+            android:name=".presentation.screen.mainScreenContainer.MainActivity"
             android:exported="true"
             android:windowSoftInputMode="adjustNothing">
             <intent-filter>
