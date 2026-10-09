@@ -73,7 +73,7 @@ class MainActivity : AppCompatActivity() {
         binding.mainBottomNavigation.setOnItemSelectedListener { item ->
             val position = when (item.itemId) {
                 R.id.tasks -> 0
-                R.id.aiAssistant -> 1
+                R.id.assistant -> 1
                 R.id.notes -> 2
                 R.id.settings -> 3
                 else -> return@setOnItemSelectedListener false
