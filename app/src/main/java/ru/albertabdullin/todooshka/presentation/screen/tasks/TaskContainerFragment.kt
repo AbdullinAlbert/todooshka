@@ -41,7 +41,7 @@ class TaskContainerFragment : Fragment() {
 
     private val taskContainerViewModel: TaskContainerViewModel by viewModels {
         TaskContainerViewModel.factory(
-            taskRepository = diContainer().getTaskRepositorySingleton()
+            taskRepository = diContainer().taskRepository
         )
     }
 

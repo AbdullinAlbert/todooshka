@@ -1,17 +1,23 @@
 package ru.albertabdullin.todooshka.infrastructure.di
 
+import android.content.Context
+import androidx.room3.Room
+import androidx.sqlite.driver.AndroidSQLiteDriver
+import ru.albertabdullin.todooshka.data.db.TodooshkaDatabase
 import ru.albertabdullin.todooshka.data.repository.TaskRepositoryImpl
 import ru.albertabdullin.todooshka.domain.repository.TaskRepository
 import ru.albertabdullin.todooshka.domain.useCase.TasksUseCase
 
-class DiContainer {
-    private var taskRepository: TaskRepository? = null
+class DiContainer(context: Context) {
+    val taskRepository: TaskRepository by lazy {
+        createTaskRepository()
+    }
 
-    fun getTaskRepositorySingleton(): TaskRepository {
-        if (taskRepository == null) {
-            taskRepository = createTaskRepository()
-        }
-        return taskRepository!!
+    private val db: TodooshkaDatabase by lazy {
+        Room
+            .databaseBuilder<TodooshkaDatabase>(context, "todooshka.db")
+            .setDriver(AndroidSQLiteDriver())
+            .build()
     }
 
     private fun createTaskRepository(): TaskRepository {
@@ -20,9 +26,7 @@ class DiContainer {
 
 
     fun getTasksUseCaseInstance(): TasksUseCase {
-        return TasksUseCase(
-            getTaskRepositorySingleton()
-        )
+        return TasksUseCase(taskRepository)
     }
 
 }

@@ -5,7 +5,7 @@ import ru.albertabdullin.todooshka.infrastructure.di.DiContainer
 
 class App : Application() {
 
-    val diContainer: DiContainer by lazy { DiContainer() }
+    val diContainer: DiContainer by lazy { DiContainer(applicationContext) }
 
     override fun onCreate() {
         super.onCreate()

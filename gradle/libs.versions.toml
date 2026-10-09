@@ -9,7 +9,7 @@ appcompatVersion = "1.6.1"
 materialVersion = "1.10.0"
 activityKtxVersion = "1.13.0"
 constraintlayoutVersion = "2.1.4"
-roomRuntimeVersion = "2.8.4"
+roomRuntimeVersion = "3.0.3"
 viewpager2Version = "1.1.0"
 fragmentVersion = "1.8.9"
 recyclerviewVersion = "1.4.0"
@@ -18,8 +18,8 @@ coroutines = "1.11.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
-androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomRuntimeVersion" }
-androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomRuntimeVersion" }
+androidx-room3-runtime = { module = "androidx.room3:room3-runtime", version.ref = "roomRuntimeVersion" }
+androidx-room3-compiler = { module = "androidx.room3:room3-compiler", version.ref = "roomRuntimeVersion" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
@@ -36,4 +36,4 @@ kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutine
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp-ver" }
-
+room = { id = "androidx.room3", version.ref = "roomRuntimeVersion" }

@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.room)
 }
 
 android {
@@ -39,8 +40,12 @@ android {
     }
 }
 
+room3 {
+    schemaDirectory("$projectDir/schemas")
+}
+
 dependencies {
-    ksp(libs.androidx.room.compiler)
+    ksp(libs.androidx.room3.compiler)
     implementation(libs.androidx.recyclerview)
     implementation(libs.androidx.viewmodel)
     implementation(libs.kotlinx.coroutines.android)
@@ -49,7 +54,7 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.core.ktx)
     implementation(libs.material)
-    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room3.runtime)
     implementation(libs.androidx.viewpager2)
     implementation(libs.androidx.fragment)
     testImplementation(libs.junit)
