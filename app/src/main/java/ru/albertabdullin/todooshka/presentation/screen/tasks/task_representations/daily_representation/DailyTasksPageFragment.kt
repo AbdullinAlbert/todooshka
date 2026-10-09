@@ -84,7 +84,7 @@ class DailyTasksPageFragment : Fragment() {
 
     private fun subscribeToState() {
         viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+            viewLifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 dailyTasksPageViewModel.taskList.collect {
                     if (tasksAdapter == null) return@collect
                     tasksAdapter!!.submitList(it) {
@@ -107,11 +107,11 @@ class DailyTasksPageFragment : Fragment() {
             viewLifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 taskContainerViewModel.dateTabBottomCoordinate.filter { it > 0 }
                     .collect { dateTabBottomCoordinate ->
+                        val location = IntArray(2)
+                        binding.tasksList.getLocationInWindow(location)
+                        val tasksListTopPadding = (dateTabBottomCoordinate - location[1])
+                        binding.tasksList.updatePadding(top = tasksListTopPadding)
                         binding.tasksList.doOnPreDraw { tasksList ->
-                            val location = IntArray(2)
-                            tasksList.getLocationInWindow(location)
-                            val tasksListTopPadding = (dateTabBottomCoordinate - location[1])
-                            tasksList.updatePadding(top = tasksListTopPadding)
                             tasksList.visibility = View.VISIBLE
                         }
                     }

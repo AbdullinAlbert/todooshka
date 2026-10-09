@@ -61,7 +61,7 @@ class DailyRepresentationTasksFragment : Fragment() {
         currentSelectedDate =
             savedInstanceState?.getLong(currentSelectedDateKey, Long.MIN_VALUE) ?: Long.MIN_VALUE
         setupTabAdapter()
-        collectScrollToDateEvents()
+        subscribeToSelectedDate()
         setupViewPager()
         binding.dailyDateTabList.doOnPreDraw {
             val location = IntArray(2)
@@ -118,7 +118,7 @@ class DailyRepresentationTasksFragment : Fragment() {
         binding.dailyDateTabList.adapter = tabAdapter
     }
 
-    private fun collectScrollToDateEvents() {
+    private fun subscribeToSelectedDate() {
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.RESUMED) {
                 taskContainerViewModel.taskContainerState
@@ -127,19 +127,19 @@ class DailyRepresentationTasksFragment : Fragment() {
                     .collect { dateSelectionChangedArs ->
                         if (dateSelectionChangedArs.currentSelectedDayEpoch == currentSelectedDate) return@collect
                         currentSelectedDate = dateSelectionChangedArs.currentSelectedDayEpoch
-                        scrollEventForTabs(dateSelectionChangedArs)
-                        scrollEventForPages(dateSelectionChangedArs)
+                        selectNewDateTab(dateSelectionChangedArs)
+                        selectNewPage(dateSelectionChangedArs)
                     }
             }
         }
     }
 
-    private fun scrollEventForPages(dateSelectionChangedArs: DateSelectionChangedArgs) {
+    private fun selectNewPage(dateSelectionChangedArs: DateSelectionChangedArgs) {
         val date = LocalDate.ofEpochDay(dateSelectionChangedArs.currentSelectedDayEpoch)
         binding.dailyTaskRepresentationViewPager.currentItem = dailyDateRange.positionOf(date)
     }
 
-    private fun scrollEventForTabs(dateSelectionChangedArs: DateSelectionChangedArgs) {
+    private fun selectNewDateTab(dateSelectionChangedArs: DateSelectionChangedArgs) {
         if (tabAdapter == null) return
         val layoutManager = binding.dailyDateTabList.layoutManager as? LinearLayoutManager ?: return
 
