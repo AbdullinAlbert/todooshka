@@ -2,6 +2,7 @@ package ru.albertabdullin.todooshka.presentation.screen.tasks.task_representatio
 
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
@@ -14,6 +15,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
@@ -28,6 +30,7 @@ import ru.albertabdullin.todooshka.presentation.screen.tasks.task_representation
 import ru.albertabdullin.todooshka.presentation.screen.tasks.task_representations.daily_representation.adapters.RecyclerViewDailyAdapter
 import ru.albertabdullin.todooshka.presentation.screen.tasks.value_object.DateSelectionChangedArgs
 import ru.albertabdullin.todooshka.presentation.screen.tasks.viewmodel.TaskContainerViewModel
+import ru.albertabdullin.todooshka.presentation.screen.tasks.viewmodel.TaskTrackerWorkMode
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -49,6 +52,22 @@ class DailyRepresentationTasksFragment : Fragment() {
     private val dateTimeFormatter =
         DateTimeFormatter.ofPattern("d MMMM, EEEE", Locale.forLanguageTag("ru-RU"))
 
+    private val rvLockableTouchListener = object :
+        RecyclerView.OnItemTouchListener {
+        override fun onInterceptTouchEvent(
+            rv: RecyclerView,
+            e: MotionEvent
+        ): Boolean {
+            return true
+        }
+
+        override fun onTouchEvent(rv: RecyclerView, e: MotionEvent) {}
+
+        override fun onRequestDisallowInterceptTouchEvent(
+            disallowIntercept: Boolean
+        ) {}
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
@@ -61,12 +80,35 @@ class DailyRepresentationTasksFragment : Fragment() {
         currentSelectedDate =
             savedInstanceState?.getLong(currentSelectedDateKey, Long.MIN_VALUE) ?: Long.MIN_VALUE
         setupTabAdapter()
+        subscribeToWorkMode()
         subscribeToSelectedDate()
         setupViewPager()
         binding.dailyDateTabList.doOnPreDraw {
             val location = IntArray(2)
             it.getLocationInWindow(location)
             taskContainerViewModel.updateDateTabBottomCoordinate(location[1] + it.height)
+        }
+    }
+
+    private fun subscribeToWorkMode() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                taskContainerViewModel.taskContainerState
+                    .map { it.taskTrackerWorkMode }
+                    .collect {
+                        when (it) {
+                            TaskTrackerWorkMode.READ -> {
+                                binding.dailyTaskRepresentationViewPager.isUserInputEnabled = true
+                                binding.dailyDateTabList.removeOnItemTouchListener(rvLockableTouchListener)
+                            }
+
+                            else -> {
+                                binding.dailyTaskRepresentationViewPager.isUserInputEnabled = false
+                                binding.dailyDateTabList.addOnItemTouchListener(rvLockableTouchListener)
+                            }
+                        }
+                    }
+            }
         }
     }
 
