@@ -1,4 +1,4 @@
-package ru.albertabdullin.todooshka.presentation.screen.aiAssistant
+package ru.albertabdullin.todooshka.presentation.screen.assistant
 
 import androidx.fragment.app.Fragment
 import ru.albertabdullin.todooshka.R

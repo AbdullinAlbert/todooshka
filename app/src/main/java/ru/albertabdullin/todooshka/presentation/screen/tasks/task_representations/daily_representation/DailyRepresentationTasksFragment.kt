@@ -47,7 +47,9 @@ class DailyRepresentationTasksFragment : Fragment() {
 
     private var currentSelectedDate: Long = Long.MIN_VALUE
 
-    private val currentSelectedDateKey = "currentSelectedDateKey"
+    companion object {
+        private const val CURRENT_SELECTED_DATE_KEY = "CURRENT_SELECTED_DATE_KEY"
+    }
 
     private val dateTimeFormatter =
         DateTimeFormatter.ofPattern("d MMMM, EEEE", Locale.forLanguageTag("ru-RU"))
@@ -65,7 +67,8 @@ class DailyRepresentationTasksFragment : Fragment() {
 
         override fun onRequestDisallowInterceptTouchEvent(
             disallowIntercept: Boolean
-        ) {}
+        ) {
+        }
     }
 
     override fun onCreateView(
@@ -77,8 +80,7 @@ class DailyRepresentationTasksFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        currentSelectedDate =
-            savedInstanceState?.getLong(currentSelectedDateKey, Long.MIN_VALUE) ?: Long.MIN_VALUE
+        currentSelectedDate = savedInstanceState?.getLong(CURRENT_SELECTED_DATE_KEY) ?: Long.MIN_VALUE
         setupTabAdapter()
         subscribeToWorkMode()
         subscribeToSelectedDate()
@@ -99,12 +101,16 @@ class DailyRepresentationTasksFragment : Fragment() {
                         when (it) {
                             TaskTrackerWorkMode.READ -> {
                                 binding.dailyTaskRepresentationViewPager.isUserInputEnabled = true
-                                binding.dailyDateTabList.removeOnItemTouchListener(rvLockableTouchListener)
+                                binding.dailyDateTabList.removeOnItemTouchListener(
+                                    rvLockableTouchListener
+                                )
                             }
 
                             else -> {
                                 binding.dailyTaskRepresentationViewPager.isUserInputEnabled = false
-                                binding.dailyDateTabList.addOnItemTouchListener(rvLockableTouchListener)
+                                binding.dailyDateTabList.addOnItemTouchListener(
+                                    rvLockableTouchListener
+                                )
                             }
                         }
                     }
@@ -113,7 +119,7 @@ class DailyRepresentationTasksFragment : Fragment() {
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        outState.putLong(currentSelectedDateKey, currentSelectedDate)
+        outState.putLong(CURRENT_SELECTED_DATE_KEY, currentSelectedDate)
         super.onSaveInstanceState(outState)
     }
 

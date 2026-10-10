@@ -40,6 +40,8 @@ class DailyTasksPageFragment : Fragment() {
         ownerProducer = { requireParentFragment().requireParentFragment() }
     )
 
+    private var tasksListTopPadding: Int = 0
+
     companion object {
 
         fun getInstance(date: LocalDate): DailyTasksPageFragment {
@@ -50,6 +52,8 @@ class DailyTasksPageFragment : Fragment() {
                 arguments = args
             }
         }
+
+        private const val TASKS_LIST_TOP_PADDING_KEY: String = "TASKS_LIST_TOP_PADDING_KEY"
 
         private const val DATE_KEY: String = "DATE_KEY"
     }
@@ -63,6 +67,7 @@ class DailyTasksPageFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        tasksListTopPadding = savedInstanceState?.getInt(TASKS_LIST_TOP_PADDING_KEY) ?: 0
         setupTasksList()
         subscribeToState()
         subscribeToTDateTabPadding()
@@ -107,9 +112,11 @@ class DailyTasksPageFragment : Fragment() {
             viewLifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 taskContainerViewModel.dateTabBottomCoordinate.filter { it > 0 }
                     .collect { dateTabBottomCoordinate ->
-                        val location = IntArray(2)
-                        binding.tasksList.getLocationInWindow(location)
-                        val tasksListTopPadding = (dateTabBottomCoordinate - location[1])
+                        if (tasksListTopPadding == 0) {
+                            val location = IntArray(2)
+                            binding.tasksList.getLocationInWindow(location)
+                            tasksListTopPadding = (dateTabBottomCoordinate - location[1])
+                        }
                         binding.tasksList.updatePadding(top = tasksListTopPadding)
                         binding.tasksList.doOnPreDraw { tasksList ->
                             tasksList.visibility = View.VISIBLE
@@ -117,6 +124,11 @@ class DailyTasksPageFragment : Fragment() {
                     }
             }
         }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putInt(TASKS_LIST_TOP_PADDING_KEY, tasksListTopPadding)
+        super.onSaveInstanceState(outState)
     }
 
     override fun onDestroyView() {

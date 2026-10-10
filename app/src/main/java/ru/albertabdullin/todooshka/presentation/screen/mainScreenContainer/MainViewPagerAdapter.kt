@@ -3,7 +3,7 @@ package ru.albertabdullin.todooshka.presentation.screen.mainScreenContainer
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.viewpager2.adapter.FragmentStateAdapter
-import ru.albertabdullin.todooshka.presentation.screen.aiAssistant.Assistant
+import ru.albertabdullin.todooshka.presentation.screen.assistant.Assistant
 import ru.albertabdullin.todooshka.presentation.screen.notes.NotesFragment
 import ru.albertabdullin.todooshka.presentation.screen.settings.SettingsFragment
 import ru.albertabdullin.todooshka.presentation.screen.tasks.TaskContainerFragment
