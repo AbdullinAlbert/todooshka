@@ -3,6 +3,7 @@ package ru.albertabdullin.todooshka.presentation.screen.mainScreenContainer
 import android.content.res.Configuration.ORIENTATION_LANDSCAPE
 import android.graphics.Color
 import android.os.Bundle
+import android.view.ViewGroup
 import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -29,7 +30,7 @@ class MainActivity : AppCompatActivity() {
         )
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
+        ViewCompat.setOnApplyWindowInsetsListener(binding.main) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
 
             val ime = insets.getInsets(
@@ -57,13 +58,27 @@ class MainActivity : AppCompatActivity() {
             } else {
                 0
             }
-
-
             v.setPadding(systemBars.left, systemBars.top, right, bottom)
+            insets
+        }
+        ViewCompat.setOnApplyWindowInsetsListener(binding.mainBottomNavigation) { _, insets ->
+            insets
+        }
+        ViewCompat.setOnApplyWindowInsetsListener(binding.navigationBarCard) { v, insets ->
+            val lp = v.layoutParams as ViewGroup.MarginLayoutParams
+            val ime = insets.getInsets(WindowInsetsCompat.Type.ime())
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            var bottom = systemBars.bottom + resources.getDimension(R.dimen.bottom_navigation_bar_margin_bottom)
+            if (insets.isVisible(WindowInsetsCompat.Type.ime())) {
+                bottom += ime.bottom
+            }
+            lp.setMargins(lp.leftMargin, lp.topMargin, lp.rightMargin, bottom.toInt())
+            v.layoutParams = lp
             insets
         }
         setupView()
     }
+
 
     private fun setupView() {
         binding.mainViewPager.apply {
