@@ -79,4 +79,8 @@
         <item name="subtitleTextColor">?attr/colorOnPrimary</item>
         <item name="navigationIconTint">?attr/colorOnPrimary</item>
     </style>
+
+    <style name="TextAppearance.Todooshka.BottomNavLabel" parent="TextAppearance.Material3.LabelMedium">
+        <item name="android:textSize">12sp</item>
+    </style>
 </resources>

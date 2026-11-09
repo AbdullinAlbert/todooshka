@@ -33,8 +33,13 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@color/white"
-            app:labelVisibilityMode="labeled"
+            android:minHeight="58dp"
             android:paddingHorizontal="4dp"
+            app:labelVisibilityMode="labeled"
+            app:itemPaddingTop="4dp"
+            app:itemPaddingBottom="6dp"
+            app:itemTextAppearanceActive="@style/TextAppearance.Todooshka.BottomNavLabel"
+            app:itemTextAppearanceInactive="@style/TextAppearance.Todooshka.BottomNavLabel"
             app:menu="@menu/bottom_navigation_menu" />
     </androidx.cardview.widget.CardView>
 

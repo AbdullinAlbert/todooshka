@@ -66,12 +66,8 @@ class MainActivity : AppCompatActivity() {
         }
         ViewCompat.setOnApplyWindowInsetsListener(binding.navigationBarCard) { v, insets ->
             val lp = v.layoutParams as ViewGroup.MarginLayoutParams
-            val ime = insets.getInsets(WindowInsetsCompat.Type.ime())
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            var bottom = systemBars.bottom + resources.getDimension(R.dimen.bottom_navigation_bar_margin_bottom)
-            if (insets.isVisible(WindowInsetsCompat.Type.ime())) {
-                bottom += ime.bottom
-            }
+            val bottom = resources.getDimension(R.dimen.bottom_navigation_bar_margin_bottom) + systemBars.bottom
             lp.setMargins(lp.leftMargin, lp.topMargin, lp.rightMargin, bottom.toInt())
             v.layoutParams = lp
             insets
