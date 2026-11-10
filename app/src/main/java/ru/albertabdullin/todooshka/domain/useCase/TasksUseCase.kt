@@ -1,17 +1,36 @@
 package ru.albertabdullin.todooshka.domain.useCase
 
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import ru.albertabdullin.todooshka.domain.entity.Task
+
 import ru.albertabdullin.todooshka.domain.repository.TaskRepository
 import java.time.LocalDate
 
 class TasksUseCase(
     private val taskRepository: TaskRepository
 ) {
-    suspend fun getTasks(selectedDate: LocalDate): List<Task> {
-        val tasks = taskRepository.getTasks(selectedDate)
-        if (tasks.isNotEmpty()) return tasks
-        return listOf(Task(id = 0))
+    fun getTasks(selectedDate: LocalDate): Flow<List<Task>> {
+        return taskRepository
+            .getTasks(selectedDate)
+            .map { tasks ->
+                tasks.ifEmpty { listOf(emptyTask(selectedDate)) }
+            }
     }
+
+
+    private fun emptyTask(selectedDate: LocalDate): Task {
+        return Task(
+            id = 0,
+            description = "",
+            startOn = selectedDate,
+            completedOn = null,
+            durationDays = 1,
+            sort = 0,
+            subtasks = emptyList()
+        )
+    }
+
 
     fun deleteTask(
         currentTasksList: List<Task>,

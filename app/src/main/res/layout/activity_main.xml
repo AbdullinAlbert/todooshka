@@ -22,26 +22,39 @@
         android:id="@+id/navigation_bar_card"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="8dp"
         app:cardCornerRadius="128dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
+        app:layout_constraintEnd_toEndOf="@+id/right_border"
+        app:layout_constraintStart_toStartOf="@+id/left_border">
 
         <com.google.android.material.bottomnavigation.BottomNavigationView
             android:id="@+id/main_bottom_navigation"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@color/white"
-            android:minHeight="58dp"
-            android:paddingHorizontal="4dp"
-            app:labelVisibilityMode="labeled"
-            app:itemPaddingTop="4dp"
+            android:minHeight="54dp"
+            android:paddingHorizontal="16dp"
             app:itemPaddingBottom="6dp"
+            app:itemPaddingTop="4dp"
             app:itemTextAppearanceActive="@style/TextAppearance.Todooshka.BottomNavLabel"
             app:itemTextAppearanceInactive="@style/TextAppearance.Todooshka.BottomNavLabel"
+            app:labelVisibilityMode="labeled"
             app:menu="@menu/bottom_navigation_menu" />
     </androidx.cardview.widget.CardView>
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/right_border"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.95" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/left_border"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.05" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

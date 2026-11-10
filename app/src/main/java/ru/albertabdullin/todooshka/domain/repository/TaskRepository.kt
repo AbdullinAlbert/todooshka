@@ -7,5 +7,5 @@ import java.time.LocalDate
 interface TaskRepository {
     suspend fun getDateLeftBound(): Flow<LocalDate>
 
-    suspend fun getTasks(selectedDate: LocalDate): List<Task>
+    fun getTasks(selectedDate: LocalDate): Flow<List<Task>>
 }

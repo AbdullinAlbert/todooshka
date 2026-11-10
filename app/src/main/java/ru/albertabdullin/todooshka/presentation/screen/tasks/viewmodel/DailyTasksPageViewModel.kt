@@ -9,6 +9,7 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import ru.albertabdullin.todooshka.domain.entity.Task
 import ru.albertabdullin.todooshka.domain.useCase.TaskAdded
@@ -31,10 +32,12 @@ class DailyTasksPageViewModel(
 
     init {
         viewModelScope.launch {
-            val list = tasksUseCase
+            tasksUseCase
                 .getTasks(dateForPage)
-                .map { it.toUi() }
-            _tasksList.emit(list)
+                .map { tasks -> tasks.map { task -> task.toUi() } }
+                .collect { list ->
+                    _tasksList.emit(list)
+                }
         }
     }
 

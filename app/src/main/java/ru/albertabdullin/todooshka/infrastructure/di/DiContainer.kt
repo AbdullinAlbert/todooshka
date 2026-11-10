@@ -10,7 +10,7 @@ import ru.albertabdullin.todooshka.domain.useCase.TasksUseCase
 
 class DiContainer(context: Context) {
     val taskRepository: TaskRepository by lazy {
-        createTaskRepository()
+        createTaskRepository(db)
     }
 
     private val db: TodooshkaDatabase by lazy {
@@ -20,8 +20,8 @@ class DiContainer(context: Context) {
             .build()
     }
 
-    private fun createTaskRepository(): TaskRepository {
-        return TaskRepositoryImpl()
+    private fun createTaskRepository(db: TodooshkaDatabase): TaskRepository {
+        return TaskRepositoryImpl(db.taskDao())
     }
 
 

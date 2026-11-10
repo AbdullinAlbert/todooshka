@@ -7,8 +7,4 @@ class App : Application() {
 
     val diContainer: DiContainer by lazy { DiContainer(applicationContext) }
 
-    override fun onCreate() {
-        super.onCreate()
-    }
-
 }
