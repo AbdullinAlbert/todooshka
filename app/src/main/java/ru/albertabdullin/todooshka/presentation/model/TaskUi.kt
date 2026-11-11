@@ -1,15 +1,22 @@
 package ru.albertabdullin.todooshka.presentation.model
 
+import java.time.LocalDate
+
 data class TaskUi(
     val id: Int,
+    val startOn: LocalDate,
+    val durationDays: Int,
+    val completedOn: LocalDate?,
     val description: String,
     val descriptionVersion: Int = 0,
-    val isCompleted: Boolean,
-    val subTasks: List<TaskUi>,
-    val isCompleteEnabled: Boolean,
-    val selectionPosition: Int
+    val sort: Int,
+    val selectionPosition: Int,
+    val subtasks: List<SubtaskUi>,
 ) {
     val isGroupTask: Boolean
-        get() = subTasks.isNotEmpty()
+        get() = subtasks.isNotEmpty()
+
+    val isCompleted: Boolean
+        get() = completedOn != null
 }
 
