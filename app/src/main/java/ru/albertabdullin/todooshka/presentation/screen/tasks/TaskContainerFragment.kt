@@ -57,7 +57,10 @@ class TaskContainerFragment : Fragment() {
             return when (menuItem.itemId) {
                 R.id.undo_action_menu_item -> true
                 R.id.redo_action_menu_item -> true
-                R.id.save_tasks_menu_item -> true
+                R.id.save_tasks_menu_item -> {
+                    taskContainerViewModel.onSaveButtonWasClicked()
+                    true
+                }
                 else -> false
             }
         }
@@ -214,7 +217,7 @@ class TaskContainerFragment : Fragment() {
                                     )
                                 )
                                 binding.taskTrackerToolbar.setNavigationOnClickListener {
-                                    taskContainerViewModel.onBackToReadMode()
+                                    taskContainerViewModel.onBackToReadModeButtonWasClicked()
                                 }
                                 binding.taskTrackerToolbar.title = ""
                                 binding.taskTrackerToolbar.addMenuProvider(editModeMenuProvider)

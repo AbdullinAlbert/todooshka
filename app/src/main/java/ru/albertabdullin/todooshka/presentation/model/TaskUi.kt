@@ -18,5 +18,20 @@ data class TaskUi(
 
     val isCompleted: Boolean
         get() = completedOn != null
+
+    companion object {
+        fun empty(startOn: LocalDate): TaskUi {
+            return TaskUi(
+                id = 0,
+                startOn = startOn,
+                durationDays = 1,
+                completedOn = null,
+                description = "",
+                sort = 0,
+                selectionPosition = 0,
+                subtasks = emptyList()
+            )
+        }
+    }
 }
 

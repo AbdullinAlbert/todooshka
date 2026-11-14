@@ -29,6 +29,26 @@ class TaskContainerViewModel(
     private val _taskContainerState = MutableStateFlow(TaskTrackerState())
     val taskContainerState: StateFlow<TaskTrackerState> = _taskContainerState
 
+    private val _openCalendarEvent = MutableSharedFlow<DatePickerArgs>(
+        replay = 0,
+        extraBufferCapacity = 1,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST
+    )
+
+    val openCalendarEvent: SharedFlow<DatePickerArgs> = _openCalendarEvent
+
+
+    private val _appBarItemMenuEvent = MutableSharedFlow<AppBarItemMenuEvent>(
+        replay = 0,
+        extraBufferCapacity = 1,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST
+    )
+
+    val appBarItemMenuEvent: SharedFlow<AppBarItemMenuEvent> = _appBarItemMenuEvent
+
+    private val _dateTabBottomCoordinate = MutableStateFlow(-1)
+    val dateTabBottomCoordinate: StateFlow<Int> = _dateTabBottomCoordinate
+
     init {
         viewModelScope.launch {
             taskRepository
@@ -38,9 +58,6 @@ class TaskContainerViewModel(
                 }
         }
     }
-
-    private val _dateTabBottomCoordinate = MutableStateFlow(-1)
-    val dateTabBottomCoordinate: StateFlow<Int> = _dateTabBottomCoordinate
 
     fun updateDateTabBottomCoordinate(dateBottomCoordinate: Int) {
         viewModelScope.launch {
@@ -57,15 +74,6 @@ class TaskContainerViewModel(
             }
             return selectedDate
         }
-
-
-    private val _openCalendarEvent = MutableSharedFlow<DatePickerArgs>(
-        replay = 0,
-        extraBufferCapacity = 1,
-        onBufferOverflow = BufferOverflow.DROP_OLDEST
-    )
-
-    val openCalendarEvent: SharedFlow<DatePickerArgs> = _openCalendarEvent
 
     fun onNewDateIsSelected(selectedDate: LocalDate) {
         val (previous, current) = updateSelectedDate(selectedDate) ?: return
@@ -113,11 +121,15 @@ class TaskContainerViewModel(
         }
     }
 
-    fun onBackToReadMode() {
+    fun onBackToReadModeButtonWasClicked() {
         viewModelScope.launch {
-            _taskContainerState.emit(
-                _taskContainerState.value.copy(taskTrackerWorkMode = TaskTrackerWorkMode.READ)
-            )
+           _appBarItemMenuEvent.emit(BackButtonIsClicked)
+        }
+    }
+
+    fun onSaveButtonWasClicked() {
+        viewModelScope.launch {
+            _appBarItemMenuEvent.emit(SaveButtonIsClicked)
         }
     }
 
@@ -168,3 +180,8 @@ data class TaskTrackerState(
     val taskTrackerWorkMode: TaskTrackerWorkMode = TaskTrackerWorkMode.READ,
     val dateSelectionChangedArgs: DateSelectionChangedArgs = DateSelectionChangedArgs()
 )
+
+sealed interface AppBarItemMenuEvent
+
+data object BackButtonIsClicked : AppBarItemMenuEvent
+data object SaveButtonIsClicked : AppBarItemMenuEvent

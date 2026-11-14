@@ -1,26 +1,23 @@
 package ru.albertabdullin.todooshka.domain.useCase
 
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 import ru.albertabdullin.todooshka.domain.entity.Task
-
 import ru.albertabdullin.todooshka.domain.repository.TaskRepository
 import java.time.LocalDate
 
 class TasksUseCase(
-    private val taskRepository: TaskRepository
+    private val taskRepository: TaskRepository,
+    private val crudTaskResolver: CrudTaskResolver
 ) {
+
     fun getTasks(currentDate: LocalDate): Flow<List<Task>> {
-        return taskRepository.getTasks(currentDate).map { tasks ->
-            tasks.ifEmpty { listOf(newTask(currentDate = currentDate)) }
-        }
+        return taskRepository.getTasks(currentDate)
     }
 
-
     private fun newTask(
-        id: Int = 0,
+        id: Int,
         currentDate: LocalDate,
-        description: String = ""
+        description: String
     ): Task {
         return Task(
             id = id,
@@ -33,8 +30,7 @@ class TasksUseCase(
         )
     }
 
-
-    fun deleteTask(
+    fun deleteTaskAtEditMode(
         currentTasksList: List<Task>, deletedTaskId: Int, deletedTaskDescription: String
     ): DeleteTaskResult {
         if (currentTasksList.size == 1) return NoTaskDeleted
@@ -53,7 +49,7 @@ class TasksUseCase(
         )
     }
 
-    fun submitTaskAndCreateNewOne(
+    fun submitTaskAndCreateNewOneAtEditMode(
         currentTasksList: List<Task>,
         submittedTaskId: Int,
         submittedTaskDescriptionPart1: String,
@@ -116,7 +112,43 @@ class TasksUseCase(
         return TaskAdded(newTasksList = tempTasksList, newTaskId)
     }
 
+    suspend fun saveTasks(
+        currentDbSnapshot: List<Task>,
+        tasksFromUser: List<Task>,
+    ): SaveTaskResult {
+        try {
+            val result = crudTaskResolver.resolve(
+                currentDbSnapshot = currentDbSnapshot,
+                tasksFromUser = tasksFromUser
+            )
+            when (result) {
+                is NothingToSave -> return SaveTaskResultNoChanged
+                is InvalidData -> return SaveTaskResultInvalidData(result.index)
+                is AllowedForDb -> {
+                    taskRepository.saveTasks(
+                        simpleTasksToAdd = result.tasksToAdd,
+                        simpleTasksToUpdate = result.tasksToUpdate,
+                        simpleTasksToDelete = result.tasksToDelete
+                    )
+                    return SaveTaskResultSaved
+                }
+            }
+
+        } catch (e: Exception) {
+            return SaveTaskResultError(errorMessage = e.message ?: "")
+        }
+    }
 }
+
+sealed interface SaveTaskResult
+
+data object SaveTaskResultSaved : SaveTaskResult
+
+data object SaveTaskResultNoChanged : SaveTaskResult
+
+data class SaveTaskResultError(val errorMessage: String) : SaveTaskResult
+
+data class SaveTaskResultInvalidData(val pos: Int) : SaveTaskResult
 
 sealed interface SubmitTaskResult
 

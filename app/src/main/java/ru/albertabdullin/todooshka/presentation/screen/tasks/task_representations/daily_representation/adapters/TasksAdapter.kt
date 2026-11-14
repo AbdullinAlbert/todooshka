@@ -1,5 +1,6 @@
 package ru.albertabdullin.todooshka.presentation.screen.tasks.task_representations.daily_representation.adapters
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -82,9 +83,10 @@ class TasksAdapter(
             binding.simpleTaskForm.onTextChanged =
                 { text -> onTaskDescriptionChanged(task.id, text) }
             if (isActiveTask(task)) {
+                Log.d(TasksAdapter::class.simpleName, "requestFocusOnTask: ${task.id}")
                 binding.simpleTaskForm.requestFocusOnTask(task.selectionPosition)
             } else {
-                binding.simpleTaskForm.clearFocusOnTask()
+                binding.simpleTaskForm.clearFocusOnTask(task.id)
             }
         }
     }

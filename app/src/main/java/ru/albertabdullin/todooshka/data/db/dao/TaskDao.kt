@@ -22,6 +22,9 @@ interface TaskDao {
     @Insert
     suspend fun insertTasks(tasks: List<Task>)
 
+    @Insert
+    suspend fun insertTask(task: Task): Long
+
     @Update
     suspend fun updateTasks(tasks: List<Task>)
 
@@ -39,18 +42,12 @@ interface TaskDao {
 
     @Transaction
     suspend fun saveTasks(
-        tasksToAdd: List<Task>,
-        tasksToUpdate: List<Task>,
-        tasksToDelete: List<Task>,
-        subtasksToAdd: List<Subtask>,
-        subtasksToUpdate: List<Subtask>,
-        subtasksToDelete: List<Subtask>,
+        simpleTasksToAdd: List<Task>,
+        simpleTasksToUpdate: List<Task>,
+        simpleTasksToDelete: List<Task>,
     ) {
-        insertTasks(tasksToAdd)
-        updateTasks(tasksToUpdate)
-        deleteTasks(tasksToDelete)
-        insertSubtasks(subtasksToAdd)
-        updateSubtasks(subtasksToUpdate)
-        deleteSubtasks(subtasksToDelete)
+        insertTasks(simpleTasksToAdd)
+        updateTasks(simpleTasksToUpdate)
+        deleteTasks(simpleTasksToDelete)
     }
 }

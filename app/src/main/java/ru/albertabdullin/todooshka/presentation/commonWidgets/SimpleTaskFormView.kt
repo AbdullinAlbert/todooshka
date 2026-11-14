@@ -7,6 +7,7 @@ import android.graphics.Paint
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.AttributeSet
+import android.util.Log
 import android.view.LayoutInflater
 import android.widget.FrameLayout
 import androidx.appcompat.widget.AppCompatImageView
@@ -130,8 +131,15 @@ class SimpleTaskFormView @JvmOverloads constructor(
         taskDescriptionEditText.setSelection(selectionPosition)
     }
 
-    fun clearFocusOnTask() {
+    fun clearFocusOnTask(taskId: Int) {
         taskDescriptionEditText.clearFocus()
+        taskDescriptionEditText.post {
+            Log.d(
+                "TaskFocus",
+                "taskId = ${taskId} hasFocus=${taskDescriptionEditText.hasFocus()}, " +
+                        "focusedView=${taskDescriptionEditText.rootView.findFocus()}"
+            )
+        }
     }
 
     fun setOnSettingsButtonClickListener(clickListener: () -> Unit) {

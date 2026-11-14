@@ -6,6 +6,7 @@ import androidx.sqlite.driver.AndroidSQLiteDriver
 import ru.albertabdullin.todooshka.data.db.TodooshkaDatabase
 import ru.albertabdullin.todooshka.data.repository.TaskRepositoryImpl
 import ru.albertabdullin.todooshka.domain.repository.TaskRepository
+import ru.albertabdullin.todooshka.domain.useCase.CrudTaskResolver
 import ru.albertabdullin.todooshka.domain.useCase.TasksUseCase
 
 class DiContainer(context: Context) {
@@ -26,7 +27,7 @@ class DiContainer(context: Context) {
 
 
     fun getTasksUseCaseInstance(): TasksUseCase {
-        return TasksUseCase(taskRepository)
+        return TasksUseCase(taskRepository, CrudTaskResolver())
     }
 
 }

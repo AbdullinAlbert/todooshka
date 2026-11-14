@@ -8,4 +8,10 @@ interface TaskRepository {
     suspend fun getDateLeftBound(): Flow<LocalDate>
 
     fun getTasks(selectedDate: LocalDate): Flow<List<Task>>
+
+    suspend fun saveTasks(
+        simpleTasksToAdd: List<Task>,
+        simpleTasksToUpdate: List<Task>,
+        simpleTasksToDelete: List<Task>,
+    )
 }

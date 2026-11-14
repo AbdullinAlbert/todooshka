@@ -17,7 +17,9 @@ import kotlinx.coroutines.launch
 import ru.albertabdullin.todooshka.databinding.DailyRepresentationPageFragmentBinding
 import ru.albertabdullin.todooshka.presentation.extensions.diContainer
 import ru.albertabdullin.todooshka.presentation.screen.tasks.task_representations.daily_representation.adapters.TasksAdapter
+import ru.albertabdullin.todooshka.presentation.screen.tasks.viewmodel.BackButtonIsClicked
 import ru.albertabdullin.todooshka.presentation.screen.tasks.viewmodel.DailyTasksPageViewModel
+import ru.albertabdullin.todooshka.presentation.screen.tasks.viewmodel.SaveButtonIsClicked
 import ru.albertabdullin.todooshka.presentation.screen.tasks.viewmodel.TaskContainerViewModel
 import java.time.LocalDate
 
@@ -71,6 +73,7 @@ class DailyTasksPageFragment : Fragment() {
         setupTasksList()
         subscribeToState()
         subscribeToTDateTabPadding()
+        subscribeToAppBarItemMenuClicks()
     }
 
     private fun setupTasksList() {
@@ -120,6 +123,20 @@ class DailyTasksPageFragment : Fragment() {
                         binding.tasksList.updatePadding(top = tasksListTopPadding)
                         binding.tasksList.doOnPreDraw { tasksList ->
                             tasksList.visibility = View.VISIBLE
+                        }
+                    }
+            }
+        }
+    }
+
+    private fun subscribeToAppBarItemMenuClicks() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                taskContainerViewModel.appBarItemMenuEvent
+                    .collect {
+                        when (it) {
+                            BackButtonIsClicked -> TODO()
+                            SaveButtonIsClicked -> dailyTasksPageViewModel.saveTasksButtonIsClicked()
                         }
                     }
             }
