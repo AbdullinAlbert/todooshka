@@ -7,7 +7,6 @@ import android.graphics.Paint
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.AttributeSet
-import android.util.Log
 import android.view.LayoutInflater
 import android.widget.FrameLayout
 import androidx.appcompat.widget.AppCompatImageView
@@ -28,8 +27,6 @@ class SimpleTaskFormView @JvmOverloads constructor(
     var onDeleteTaskClick: ((String) -> Unit)? = null
 
     var onTextChanged: ((String) -> Unit)? = null
-
-    var onFocusAtTaskDescription: ((Boolean) -> Unit)? = null
 
     private var _taskDescriptionEditText: TaskEditText? = null
     private val taskDescriptionEditText: TaskEditText
@@ -78,15 +75,11 @@ class SimpleTaskFormView @JvmOverloads constructor(
         settingsButton.isEnabled = false
         checkbox.isEnabled = false
 
-        taskDescriptionEditText.onFocusChangeListener =
-            OnFocusChangeListener { _, hasFocus -> onFocusAtTaskDescription?.invoke(hasFocus) }
-
         taskDescriptionEditText.onSubmitTask = { part1, part2 ->
             onSubmitTask?.invoke(part1, part2)
         }
 
         taskDescriptionEditText.onDeleteTask = { deletedTaskDescription ->
-
             onDeleteTaskClick?.invoke(deletedTaskDescription)
         }
 
@@ -131,15 +124,8 @@ class SimpleTaskFormView @JvmOverloads constructor(
         taskDescriptionEditText.setSelection(selectionPosition)
     }
 
-    fun clearFocusOnTask(taskId: Int) {
+    fun clearFocusOnTask() {
         taskDescriptionEditText.clearFocus()
-        taskDescriptionEditText.post {
-            Log.d(
-                "TaskFocus",
-                "taskId = ${taskId} hasFocus=${taskDescriptionEditText.hasFocus()}, " +
-                        "focusedView=${taskDescriptionEditText.rootView.findFocus()}"
-            )
-        }
     }
 
     fun setOnSettingsButtonClickListener(clickListener: () -> Unit) {

@@ -72,6 +72,7 @@ class DailyTasksPageFragment : Fragment() {
         tasksListTopPadding = savedInstanceState?.getInt(TASKS_LIST_TOP_PADDING_KEY) ?: 0
         setupTasksList()
         subscribeToState()
+        subscribeToSaveTasksResult()
         subscribeToTDateTabPadding()
         subscribeToAppBarItemMenuClicks()
     }
@@ -138,6 +139,19 @@ class DailyTasksPageFragment : Fragment() {
                             BackButtonIsClicked -> TODO()
                             SaveButtonIsClicked -> dailyTasksPageViewModel.saveTasksButtonIsClicked()
                         }
+                    }
+            }
+        }
+    }
+
+    private fun subscribeToSaveTasksResult() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                dailyTasksPageViewModel.saveTasksResultEvents
+                    .collect {
+                        if (it is DailyTasksPageViewModel.SaveTasksResultStub) return@collect
+                        taskContainerViewModel.onTasksSaved()
+                        dailyTasksPageViewModel.saveTaskResultEventIsHandled()
                     }
             }
         }

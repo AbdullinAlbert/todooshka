@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import ru.albertabdullin.todooshka.domain.entity.Subtask
 import ru.albertabdullin.todooshka.domain.entity.Task
+import ru.albertabdullin.todooshka.domain.useCase.NoTaskDeleted
 import ru.albertabdullin.todooshka.domain.useCase.SaveTaskResultError
 import ru.albertabdullin.todooshka.domain.useCase.SaveTaskResultInvalidData
 import ru.albertabdullin.todooshka.domain.useCase.SaveTaskResultNoChanged
@@ -36,16 +37,15 @@ class DailyTasksPageViewModel(
     private var activeTaskId: Int = defaultActiveTaskId
     private var dbSnapshotTasks: List<Task> = emptyList()
 
-
+    private val _saveTasksResultEvents = MutableStateFlow<SaveTasksResultEvent>(SaveTasksResultStub)
+    val saveTasksResultEvents: StateFlow<SaveTasksResultEvent> = _saveTasksResultEvents
 
     init {
         viewModelScope.launch {
             tasksUseCase.getTasks(dateForPage)
                 .collect { domainTasks ->
                     dbSnapshotTasks = domainTasks
-                    val uiTasks = domainTasks.map { task -> task.toUi() }.toMutableList()
-                    if (uiTasks.isEmpty()) uiTasks.add(TaskUi.empty(dateForPage))
-                    _tasksList.emit(uiTasks)
+                    _tasksList.emit(createNewTaskUiList(newDomainTaskList = domainTasks))
                 }
         }
     }
@@ -113,11 +113,12 @@ class DailyTasksPageViewModel(
                 }
             }
 
-            else -> Unit
+            is NoTaskDeleted -> Unit
         }
     }
 
     fun saveTasksButtonIsClicked() {
+        activeTaskId = defaultActiveTaskId
         viewModelScope.launch {
             val result = tasksUseCase.saveTasks(
                 currentDbSnapshot = dbSnapshotTasks,
@@ -126,16 +127,24 @@ class DailyTasksPageViewModel(
             when (result) {
                 is SaveTaskResultError -> TODO()
                 is SaveTaskResultInvalidData -> TODO()
-                is SaveTaskResultNoChanged -> _tasksList.emit(createNewTaskUiList(newDomainTaskList = dbSnapshotTasks))
-                is SaveTaskResultSaved -> {
-                    activeTaskId = defaultActiveTaskId
+                is SaveTaskResultNoChanged -> {
+                    _tasksList.emit(createNewTaskUiList(newDomainTaskList = dbSnapshotTasks))
+                    _saveTasksResultEvents.emit(TasksSavingSuccess)
                 }
+                is SaveTaskResultSaved -> _saveTasksResultEvents.emit(TasksSavingSuccess)
             }
         }
     }
 
+    fun saveTaskResultEventIsHandled() {
+        viewModelScope.launch {
+            _saveTasksResultEvents.emit(SaveTasksResultStub)
+        }
+    }
+
     private fun createNewTaskUiList(
-        selectionPos: Int = -1, newDomainTaskList: List<Task>
+        selectionPos: Int = -1,
+        newDomainTaskList: List<Task>
     ): List<TaskUi> {
         val helperMap = _tasksList.value.associate { it.id to it.descriptionVersion }
         val newTaskUiList = newDomainTaskList.map {
@@ -145,7 +154,8 @@ class DailyTasksPageViewModel(
             it.toUi(
                 selectionPos = selectionPos, updateDescriptionVersion = updateDescriptionVersion
             )
-        }
+        }.toMutableList()
+        if (newTaskUiList.isEmpty()) newTaskUiList.add(TaskUi.empty(dateForPage))
         return newTaskUiList
     }
 
@@ -214,4 +224,8 @@ class DailyTasksPageViewModel(
             }
         }
     }
+
+    sealed interface SaveTasksResultEvent
+    data object TasksSavingSuccess : SaveTasksResultEvent
+    data object SaveTasksResultStub : SaveTasksResultEvent
 }

@@ -33,12 +33,18 @@ class TasksUseCase(
     fun deleteTaskAtEditMode(
         currentTasksList: List<Task>, deletedTaskId: Int, deletedTaskDescription: String
     ): DeleteTaskResult {
-        if (currentTasksList.size == 1) return NoTaskDeleted
-        val tempList = currentTasksList.toMutableList()
-        val deletedTaskIndex = tempList.indexOfFirst { task -> task.id == deletedTaskId }
+        val deletedTaskIndex = currentTasksList.indexOfFirst { task -> task.id == deletedTaskId }
         if (deletedTaskIndex == -1) return NoTaskDeleted
-        if (deletedTaskIndex == 0 && deletedTaskDescription.isNotBlank()) return NoTaskDeleted
+        if (deletedTaskIndex == 0) {
+            if (deletedTaskDescription.isNotBlank()) return NoTaskDeleted
+            if (currentTasksList.size == 1) return TaskDeleted(
+                activeTaskId = -1,
+                newTasksList = emptyList(),
+                selectionPos = -1
+            )
+        }
         val activeTaskIndex = if (deletedTaskIndex == 0) 1 else deletedTaskIndex - 1
+        val tempList = currentTasksList.toMutableList()
         val newActiveTask = tempList[activeTaskIndex]
         tempList[activeTaskIndex] =
             newActiveTask.copy(description = newActiveTask.description + deletedTaskDescription)
@@ -161,7 +167,9 @@ data object NoTaskAdded : SubmitTaskResult
 sealed interface DeleteTaskResult
 
 data class TaskDeleted(
-    val newTasksList: List<Task>, val activeTaskId: Int, val selectionPos: Int
+    val newTasksList: List<Task>,
+    val activeTaskId: Int,
+    val selectionPos: Int
 ) : DeleteTaskResult
 
 data object NoTaskDeleted : DeleteTaskResult

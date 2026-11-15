@@ -123,13 +123,21 @@ class TaskContainerViewModel(
 
     fun onBackToReadModeButtonWasClicked() {
         viewModelScope.launch {
-           _appBarItemMenuEvent.emit(BackButtonIsClicked)
+            _appBarItemMenuEvent.emit(BackButtonIsClicked)
         }
     }
 
     fun onSaveButtonWasClicked() {
         viewModelScope.launch {
             _appBarItemMenuEvent.emit(SaveButtonIsClicked)
+        }
+    }
+
+    fun onTasksSaved() {
+        viewModelScope.launch {
+            _taskContainerState.emit(
+                _taskContainerState.value.copy(taskTrackerWorkMode = TaskTrackerWorkMode.READ)
+            )
         }
     }
 

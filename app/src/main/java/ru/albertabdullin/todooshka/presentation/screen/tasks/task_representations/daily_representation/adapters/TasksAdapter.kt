@@ -83,10 +83,11 @@ class TasksAdapter(
             binding.simpleTaskForm.onTextChanged =
                 { text -> onTaskDescriptionChanged(task.id, text) }
             if (isActiveTask(task)) {
-                Log.d(TasksAdapter::class.simpleName, "requestFocusOnTask: ${task.id}")
+                Log.d(TasksAdapter::class.simpleName, "request focus: $task")
                 binding.simpleTaskForm.requestFocusOnTask(task.selectionPosition)
             } else {
-                binding.simpleTaskForm.clearFocusOnTask(task.id)
+                Log.d(TasksAdapter::class.simpleName, "clear focus: $task")
+                binding.simpleTaskForm.clearFocusOnTask()
             }
         }
     }

@@ -7,18 +7,22 @@ class CrudTaskResolver {
         currentDbSnapshot: List<Task>,
         tasksFromUser: List<Task>,
     ): CrudTaskResolverResult {
-        val taskWithValidData = tasksFromUser.filter { it.description.isNotBlank() }
-        if (taskWithValidData.isEmpty() && currentDbSnapshot.isEmpty()) return NothingToSave
+        val tasksFromUserWithValidData = tasksFromUser.filter { it.description.isNotBlank() }
+        if (tasksFromUserWithValidData.isEmpty() && currentDbSnapshot.isEmpty()) return NothingToSave
 
         val invalidTaskIndex = tasksFromUser.indexOfFirst { it.description.isBlank() }
-        if (invalidTaskIndex != -1) return InvalidData(index = invalidTaskIndex)
+        if (invalidTaskIndex != -1) {
+            val taskWithInvalidData = tasksFromUser[invalidTaskIndex]
+            val taskFromDbIndex = currentDbSnapshot.indexOfFirst { it.id == taskWithInvalidData.id }
+            if (taskFromDbIndex != -1) return InvalidData(index = invalidTaskIndex)
+        }
 
         val helperCurrentDbSnapshotMap = currentDbSnapshot.associateBy { it.id }
         require(currentDbSnapshot.size == helperCurrentDbSnapshotMap.size) {
             "Duplicate task IDs in the database snapshot"
         }
-        val helperTasksFromUserMap = tasksFromUser.associateBy { it.id }
-        require(tasksFromUser.size == helperTasksFromUserMap.size) {
+        val helperTasksFromUserMap = tasksFromUserWithValidData.associateBy { it.id }
+        require(tasksFromUserWithValidData.size == helperTasksFromUserMap.size) {
             "Duplicate task IDs in the user snapshot"
         }
         val tasksToAdd = resolveTasksToAdd(
