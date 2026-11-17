@@ -19,6 +19,14 @@ interface TaskDao {
     @Query(" SELECT * FROM tasks WHERE startOn = :date")
     fun getTasks(date: LocalDate): Flow<List<TaskRelation>>
 
+    @Query("""
+        SELECT COALESCE(
+            (SELECT startOn FROM tasks ORDER BY startOn LIMIT 1),
+            date('now', 'localtime')
+        ) AS startOn;
+    """)
+    fun getTasksDateLeftBound(): Flow<LocalDate>
+
     @Insert
     suspend fun insertTasks(tasks: List<Task>)
 

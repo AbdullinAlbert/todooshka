@@ -17,9 +17,7 @@ import ru.albertabdullin.todooshka.R
 import ru.albertabdullin.todooshka.presentation.model.TaskUi
 
 class SimpleTaskFormView @JvmOverloads constructor(
-    context: Context,
-    attrs: AttributeSet? = null,
-    defStyleAttr: Int = 0
+    context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : FrameLayout(context, attrs, defStyleAttr) {
 
     var onSubmitTask: ((String, String) -> Unit)? = null
@@ -27,6 +25,8 @@ class SimpleTaskFormView @JvmOverloads constructor(
     var onDeleteTaskClick: ((String) -> Unit)? = null
 
     var onTextChanged: ((String) -> Unit)? = null
+
+    var onRequestFocusAtTaskDescription: (() -> Unit)? = null
 
     private var _taskDescriptionEditText: TaskEditText? = null
     private val taskDescriptionEditText: TaskEditText
@@ -48,18 +48,12 @@ class SimpleTaskFormView @JvmOverloads constructor(
         }
 
         override fun beforeTextChanged(
-            s: CharSequence?,
-            start: Int,
-            count: Int,
-            after: Int
+            s: CharSequence?, start: Int, count: Int, after: Int
         ) {
         }
 
         override fun onTextChanged(
-            s: CharSequence?,
-            start: Int,
-            before: Int,
-            count: Int
+            s: CharSequence?, start: Int, before: Int, count: Int
         ) {
         }
 
@@ -79,6 +73,10 @@ class SimpleTaskFormView @JvmOverloads constructor(
             onSubmitTask?.invoke(part1, part2)
         }
 
+        taskDescriptionEditText.setOnClickListener {
+            onRequestFocusAtTaskDescription?.invoke()
+        }
+
         taskDescriptionEditText.onDeleteTask = { deletedTaskDescription ->
             onDeleteTaskClick?.invoke(deletedTaskDescription)
         }
@@ -88,6 +86,10 @@ class SimpleTaskFormView @JvmOverloads constructor(
         checkbox.setOnCheckedChangeListener { _, _ ->
             updateTaskFormState()
         }
+    }
+
+    fun setDescriptionFocus(hasFocus: Boolean) {
+        taskDescriptionEditText.focusable = if (hasFocus) FOCUSABLE else NOT_FOCUSABLE
     }
 
     private fun updateTaskFormState() {
@@ -133,8 +135,7 @@ class SimpleTaskFormView @JvmOverloads constructor(
         val clickedIconColor =
             ContextCompat.getColor(context, R.color.task_settings_icon_button_clicked)
 
-        val defaultButtonBackground =
-            ContextCompat.getColor(context, R.color.white)
+        val defaultButtonBackground = ContextCompat.getColor(context, R.color.white)
         val clickedButtonBackground =
             ContextCompat.getColor(context, R.color.task_settings_background_button_pressed)
 
@@ -147,16 +148,13 @@ class SimpleTaskFormView @JvmOverloads constructor(
             }
         }
         iconColorAnimator.doOnEnd {
-            settingsButton.imageTintList =
-                ContextCompat.getColorStateList(
-                    context,
-                    R.color.task_settings_icon_states
-                )
+            settingsButton.imageTintList = ContextCompat.getColorStateList(
+                context, R.color.task_settings_icon_states
+            )
         }
 
         val backgroundButtonAnimator = ValueAnimator.ofArgb(
-            defaultButtonBackground,
-            clickedButtonBackground
+            defaultButtonBackground, clickedButtonBackground
         ).apply {
             duration = 400
             repeatMode = ValueAnimator.REVERSE
@@ -175,16 +173,8 @@ class SimpleTaskFormView @JvmOverloads constructor(
             backgroundButtonAnimator.start()
             iconColorAnimator.start()
 
-            view.animate()
-                .scaleX(0.7f)
-                .scaleY(0.7f)
-                .setDuration(200)
-                .withEndAction {
-                    view.animate()
-                        .scaleY(1f)
-                        .scaleX(1f)
-                        .setDuration(200)
-                        .start()
+            view.animate().scaleX(0.7f).scaleY(0.7f).setDuration(200).withEndAction {
+                    view.animate().scaleY(1f).scaleX(1f).setDuration(200).start()
                 }.start()
 
             clickListener()

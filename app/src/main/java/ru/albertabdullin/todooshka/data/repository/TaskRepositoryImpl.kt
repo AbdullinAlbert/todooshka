@@ -13,8 +13,9 @@ import java.time.LocalDate
 class TaskRepositoryImpl(
     private val taskDao: TaskDao
 ) : TaskRepository {
-    override suspend fun getDateLeftBound(): Flow<LocalDate> {
-        return flowOf(LocalDate.now())
+
+    override fun getTasksDateLeftBound(): Flow<LocalDate> {
+        return taskDao.getTasksDateLeftBound()
     }
 
     override fun getTasks(selectedDate: LocalDate): Flow<List<Task>> {

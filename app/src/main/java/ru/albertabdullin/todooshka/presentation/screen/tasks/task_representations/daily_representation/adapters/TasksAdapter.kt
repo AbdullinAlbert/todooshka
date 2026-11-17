@@ -3,6 +3,8 @@ package ru.albertabdullin.todooshka.presentation.screen.tasks.task_representatio
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
+import android.view.View.FOCUSABLE
+import android.view.View.NOT_FOCUSABLE
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -69,7 +71,10 @@ class TasksAdapter(
         TaskViewHolder(binding.root) {
         override fun bind(task: TaskUi) {
             binding.simpleTaskForm.init(task)
-            binding.simpleTaskForm.onFocusAtTaskDescription = onFocusAtTaskDescription
+            binding.simpleTaskForm.onRequestFocusAtTaskDescription = {
+                binding.simpleTaskForm.setDescriptionFocus(true)
+                binding.simpleTaskForm.requestFocusOnTask(task.selectionPosition)
+            }
             binding.simpleTaskForm.setOnSettingsButtonClickListener {
                 onSettingsClick(task)
             }
@@ -83,10 +88,10 @@ class TasksAdapter(
             binding.simpleTaskForm.onTextChanged =
                 { text -> onTaskDescriptionChanged(task.id, text) }
             if (isActiveTask(task)) {
-                Log.d(TasksAdapter::class.simpleName, "request focus: $task")
+                binding.simpleTaskForm.setDescriptionFocus(true)
                 binding.simpleTaskForm.requestFocusOnTask(task.selectionPosition)
             } else {
-                Log.d(TasksAdapter::class.simpleName, "clear focus: $task")
+                binding.simpleTaskForm.setDescriptionFocus(false)
                 binding.simpleTaskForm.clearFocusOnTask()
             }
         }

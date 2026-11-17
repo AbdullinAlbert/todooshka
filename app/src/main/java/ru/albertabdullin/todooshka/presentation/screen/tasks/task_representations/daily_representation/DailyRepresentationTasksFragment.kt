@@ -39,8 +39,6 @@ class DailyRepresentationTasksFragment : Fragment() {
     private var _binding: DailyRepresentationTaskFragmentBinding? = null
     private val binding get() = _binding!!
     private var tabAdapter: RecyclerViewDailyAdapter? = null
-    private val dailyDateRange =
-        DailyDateRange(firstDate = LocalDate.now(), lastDate = LAST_AVAILABLE_DATE)
 
     private val taskContainerViewModel: TaskContainerViewModel by viewModels(
         ownerProducer = { requireParentFragment() })

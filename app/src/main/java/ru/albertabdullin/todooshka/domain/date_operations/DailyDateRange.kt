@@ -3,7 +3,7 @@ package ru.albertabdullin.todooshka.domain.date_operations
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 
-class DailyDateRange(private var firstDate: LocalDate, private val lastDate: LocalDate) {
+data class DailyDateRange(val firstDate: LocalDate, val lastDate: LocalDate) {
 
     val size: Int = ChronoUnit.DAYS.between(firstDate, lastDate).toInt() + 1
 
@@ -21,25 +21,25 @@ class DailyDateRange(private var firstDate: LocalDate, private val lastDate: Loc
     }
 
 
-    fun updateFirstDate(newDate: LocalDate): DateRangeChange {
-        require(newDate.isBefore(lastDate))
-
-        val previousDate = firstDate
-
-        if (newDate == previousDate) {
-            return DateRangeChange.None
-        }
-
-        firstDate = newDate
-
-        return if (newDate.isBefore(previousDate)) {
-            DateRangeChange.InsertedAtStart(
-                count = ChronoUnit.DAYS.between(newDate, previousDate).toInt()
-            )
-        } else {
-            DateRangeChange.RemovedFromStart(
-                count = ChronoUnit.DAYS.between(previousDate, newDate).toInt()
-            )
-        }
-    }
+//    fun updateFirstDate(newDate: LocalDate): DateRangeChange {
+//        require(newDate.isBefore(lastDate))
+//
+//        val previousDate = firstDate
+//
+//        if (newDate == previousDate) {
+//            return DateRangeChange.None
+//        }
+//
+//        firstDate = newDate
+//
+//        return if (newDate.isBefore(previousDate)) {
+//            DateRangeChange.InsertedAtStart(
+//                count = ChronoUnit.DAYS.between(newDate, previousDate).toInt()
+//            )
+//        } else {
+//            DateRangeChange.RemovedFromStart(
+//                count = ChronoUnit.DAYS.between(previousDate, newDate).toInt()
+//            )
+//        }
+//    }
 }
