@@ -4,7 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.view.doOnPreDraw
+import androidx.core.view.doOnNextLayout
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -123,7 +123,7 @@ class DailyTasksPageFragment : Fragment() {
                             tasksListTopPadding = (dateTabBottomCoordinate - location[1])
                         }
                         binding.tasksList.updatePadding(top = tasksListTopPadding)
-                        binding.tasksList.doOnPreDraw { tasksList ->
+                        binding.tasksList.doOnNextLayout { tasksList ->
                             tasksList.visibility = View.VISIBLE
                         }
                     }
