@@ -51,19 +51,6 @@ class RecyclerViewDailyAdapter(
 
     override fun getItemCount() = dailyDateRange.size
 
-    fun updateListRange(dateRangeChange: DateRangeChange) {
-        when (dateRangeChange) {
-            is DateRangeChange.None -> return
-            is DateRangeChange.InsertedAtStart -> {
-                notifyItemRangeInserted(0, dateRangeChange.count)
-            }
-
-            is DateRangeChange.RemovedFromStart -> {
-                notifyItemRangeRemoved(0, dateRangeChange.count)
-            }
-        }
-    }
-
 
     inner class DailyViewHolder(val binding: TaskTrackerDailyDateTabBinding) :
         RecyclerView.ViewHolder(binding.root) {

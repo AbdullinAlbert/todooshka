@@ -95,15 +95,16 @@ class DailyTasksPageFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 dailyTasksPageViewModel.taskList.collect {
-                    if (tasksAdapter == null) return@collect
-                    tasksAdapter!!.submitList(it) {
+                    val adapter = tasksAdapter ?: return@collect
+                    adapter.submitList(it) {
+                        val binding = _binding ?: return@submitList
                         val layoutManager = binding.tasksList.layoutManager as? LinearLayoutManager
                             ?: return@submitList
                         val pos = dailyTasksPageViewModel.getActiveTaskPosition()
                         if (pos < 0) return@submitList
                         val view = layoutManager.findViewByPosition(pos)
                         if (view == null) {
-                            layoutManager.scrollToPosition(it.size - 1)
+                            layoutManager.scrollToPosition(pos)
                         }
                     }
                 }

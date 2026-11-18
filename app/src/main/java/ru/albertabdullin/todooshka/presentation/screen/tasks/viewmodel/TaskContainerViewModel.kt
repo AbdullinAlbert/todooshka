@@ -26,6 +26,15 @@ class TaskContainerViewModel(
     private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
+    private val _tasksDateRange = MutableStateFlow(
+        DailyDateRange(
+            previousFirstDate = LocalDate.now(),
+            currentFirstDate = LocalDate.now(),
+            lastDate = LAST_AVAILABLE_DATE
+        )
+    )
+
+    val tasksDateRange: StateFlow<DailyDateRange> = _tasksDateRange
 
     private val _taskContainerState = MutableStateFlow(TaskTrackerState())
     val taskContainerState: StateFlow<TaskTrackerState> = _taskContainerState
@@ -55,9 +64,13 @@ class TaskContainerViewModel(
             taskRepository
                 .getTasksDateLeftBound()
                 .collect { firstDateBound ->
-                    val updatedDailyDateRange =
-                        _taskContainerState.value.dailyDateRange.copy(firstDate = firstDateBound)
-                    _taskContainerState.emit(_taskContainerState.value.copy(dailyDateRange = updatedDailyDateRange))
+                    val previousFirstDate = _tasksDateRange.value.currentFirstDate
+                    _tasksDateRange.emit(
+                        _tasksDateRange.value.copy(
+                            previousFirstDate = previousFirstDate,
+                            currentFirstDate = firstDateBound
+                        )
+                    )
                 }
         }
     }
@@ -108,7 +121,7 @@ class TaskContainerViewModel(
         viewModelScope.launch {
             _openCalendarEvent.emit(
                 DatePickerArgs(
-                    firstDate = _taskContainerState.value.dailyDateRange.firstDate,
+                    firstDate = _tasksDateRange.value.currentFirstDate,
                     selectedDate = LocalDate.ofEpochDay(selectedDateEpochDay)
                 )
             )
@@ -190,10 +203,6 @@ data class TaskTrackerState(
     val representationTaskTrackerMode: RepresentationTaskTrackerMode = RepresentationTaskTrackerMode.DAILY,
     val taskTrackerWorkMode: TaskTrackerWorkMode = TaskTrackerWorkMode.READ,
     val dateSelectionChangedArgs: DateSelectionChangedArgs = DateSelectionChangedArgs(),
-    val dailyDateRange: DailyDateRange = DailyDateRange(
-        firstDate = LocalDate.now(),
-        lastDate = LAST_AVAILABLE_DATE
-    )
 )
 
 sealed interface AppBarItemMenuEvent

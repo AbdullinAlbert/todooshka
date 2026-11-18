@@ -22,12 +22,11 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import ru.albertabdullin.todooshka.R
 import ru.albertabdullin.todooshka.databinding.DailyRepresentationTaskFragmentBinding
-import ru.albertabdullin.todooshka.domain.date_operations.DailyDateRange
-import ru.albertabdullin.todooshka.domain.date_operations.LAST_AVAILABLE_DATE
 import ru.albertabdullin.todooshka.presentation.model.TabPropertyValues
 import ru.albertabdullin.todooshka.presentation.screen.tasks.date_tab_scroll.CenteredDateTabSmoothScroller
 import ru.albertabdullin.todooshka.presentation.screen.tasks.task_representations.daily_representation.adapters.DailyTasksPageViewPagerAdapter
 import ru.albertabdullin.todooshka.presentation.screen.tasks.task_representations.daily_representation.adapters.RecyclerViewDailyAdapter
+import ru.albertabdullin.todooshka.presentation.screen.tasks.task_representations.daily_representation.adapters.extensions.updateListRange
 import ru.albertabdullin.todooshka.presentation.screen.tasks.value_object.DateSelectionChangedArgs
 import ru.albertabdullin.todooshka.presentation.screen.tasks.viewmodel.TaskContainerViewModel
 import ru.albertabdullin.todooshka.presentation.screen.tasks.viewmodel.TaskTrackerWorkMode
@@ -52,11 +51,9 @@ class DailyRepresentationTasksFragment : Fragment() {
     private val dateTimeFormatter =
         DateTimeFormatter.ofPattern("d MMMM, EEEE", Locale.forLanguageTag("ru-RU"))
 
-    private val rvLockableTouchListener = object :
-        RecyclerView.OnItemTouchListener {
+    private val rvLockableTouchListener = object : RecyclerView.OnItemTouchListener {
         override fun onInterceptTouchEvent(
-            rv: RecyclerView,
-            e: MotionEvent
+            rv: RecyclerView, e: MotionEvent
         ): Boolean {
             return true
         }
@@ -78,10 +75,11 @@ class DailyRepresentationTasksFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        currentSelectedDate = savedInstanceState?.getLong(CURRENT_SELECTED_DATE_KEY) ?: Long.MIN_VALUE
+        currentSelectedDate =
+            savedInstanceState?.getLong(CURRENT_SELECTED_DATE_KEY) ?: Long.MIN_VALUE
         setupTabAdapter()
         subscribeToWorkMode()
-        subscribeToSelectedDate()
+       // subscribeToSelectedDate()
         setupViewPager()
         binding.dailyDateTabList.doOnPreDraw {
             val location = IntArray(2)
@@ -93,25 +91,23 @@ class DailyRepresentationTasksFragment : Fragment() {
     private fun subscribeToWorkMode() {
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.RESUMED) {
-                taskContainerViewModel.taskContainerState
-                    .map { it.taskTrackerWorkMode }
-                    .collect {
-                        when (it) {
-                            TaskTrackerWorkMode.READ -> {
-                                binding.dailyTaskRepresentationViewPager.isUserInputEnabled = true
-                                binding.dailyDateTabList.removeOnItemTouchListener(
-                                    rvLockableTouchListener
-                                )
-                            }
+                taskContainerViewModel.taskContainerState.map { it.taskTrackerWorkMode }.collect {
+                    when (it) {
+                        TaskTrackerWorkMode.READ -> {
+                            binding.dailyTaskRepresentationViewPager.isUserInputEnabled = true
+                            binding.dailyDateTabList.removeOnItemTouchListener(
+                                rvLockableTouchListener
+                            )
+                        }
 
-                            else -> {
-                                binding.dailyTaskRepresentationViewPager.isUserInputEnabled = false
-                                binding.dailyDateTabList.addOnItemTouchListener(
-                                    rvLockableTouchListener
-                                )
-                            }
+                        else -> {
+                            binding.dailyTaskRepresentationViewPager.isUserInputEnabled = false
+                            binding.dailyDateTabList.addOnItemTouchListener(
+                                rvLockableTouchListener
+                            )
                         }
                     }
+                }
             }
         }
     }
@@ -122,124 +118,154 @@ class DailyRepresentationTasksFragment : Fragment() {
     }
 
     private fun setupViewPager() {
-        binding.dailyTaskRepresentationViewPager.adapter =
-            DailyTasksPageViewPagerAdapter(this, dailyDateRange)
-        binding.dailyTaskRepresentationViewPager.registerOnPageChangeCallback(object :
-            ViewPager2.OnPageChangeCallback() {
-            override fun onPageSelected(position: Int) {
-                super.onPageSelected(position)
-                taskContainerViewModel.onNewDateIsSelected(dailyDateRange.dateAt(position))
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                taskContainerViewModel.tasksDateRange.collect {
+                    val viewPagerAdapter = binding.dailyTaskRepresentationViewPager.adapter
+                    if (viewPagerAdapter == null) {
+                        binding.dailyTaskRepresentationViewPager.adapter =
+                            DailyTasksPageViewPagerAdapter(
+                                this@DailyRepresentationTasksFragment, it
+                            )
+                        binding.dailyTaskRepresentationViewPager.registerOnPageChangeCallback(object :
+                            ViewPager2.OnPageChangeCallback() {
+                            override fun onPageSelected(position: Int) {
+                                super.onPageSelected(position)
+                                taskContainerViewModel.onNewDateIsSelected(it.dateAt(position))
+                            }
+                        })
+                    } else {
+                        viewPagerAdapter.updateListRange(it.getDateRangeChange())
+                    }
+                }
             }
-        })
+        }
+
     }
 
     private fun setupTabAdapter() {
-        tabAdapter = RecyclerViewDailyAdapter(
-            dailyDateRange = dailyDateRange, tabPropertyValuesProvider = { date ->
-                var background: Int
-                var textColor: Int
-                when {
-                    taskContainerViewModel.isSelectedDate(date) -> {
-                        background = R.drawable.selected_task_tracker_date_tab_background
-                        textColor = R.color.task_tracker_selected_date_tab_text_color
-                    }
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                taskContainerViewModel.tasksDateRange.collect {
+                    val adapter = tabAdapter
+                    if (adapter == null) {
+                        tabAdapter = RecyclerViewDailyAdapter(
+                            dailyDateRange = it, tabPropertyValuesProvider = { date ->
+                                var background: Int
+                                var textColor: Int
+                                when {
+                                    taskContainerViewModel.isSelectedDate(date) -> {
+                                        background =
+                                            R.drawable.selected_task_tracker_date_tab_background
+                                        textColor =
+                                            R.color.task_tracker_selected_date_tab_text_color
+                                    }
 
-                    date.isEqual(LocalDate.now()) -> {
-                        background = R.drawable.task_tracker_today_date_tab_background
-                        textColor = R.color.task_tracker_today_date_tab_text_color
-                    }
+                                    date.isEqual(LocalDate.now()) -> {
+                                        background =
+                                            R.drawable.task_tracker_today_date_tab_background
+                                        textColor = R.color.task_tracker_today_date_tab_text_color
+                                    }
 
-                    else -> {
-                        background = R.drawable.task_tracker_date_tab_background
-                        textColor = R.color.black
+                                    else -> {
+                                        background = R.drawable.task_tracker_date_tab_background
+                                        textColor = R.color.black
+                                    }
+                                }
+                                TabPropertyValues(
+                                    formattedText = date.format(dateTimeFormatter),
+                                    background = ResourcesCompat.getDrawable(
+                                        resources, background, null
+                                    )!!,
+                                    textColor = textColor
+                                )
+                            }, onDateClick = (taskContainerViewModel::onNewDateIsSelected)
+                        )
+                        binding.dailyDateTabList.adapter = tabAdapter
+                    } else {
+                        adapter.updateListRange(it.getDateRangeChange())
                     }
                 }
-                TabPropertyValues(
-                    formattedText = date.format(dateTimeFormatter),
-                    background = ResourcesCompat.getDrawable(resources, background, null)!!,
-                    textColor = textColor
-                )
-            }, onDateClick = (taskContainerViewModel::onNewDateIsSelected)
-        )
-        binding.dailyDateTabList.adapter = tabAdapter
-    }
-
-    private fun subscribeToSelectedDate() {
-        viewLifecycleOwner.lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.RESUMED) {
-                taskContainerViewModel.taskContainerState
-                    .map { it.dateSelectionChangedArgs }
-                    .filter { !it.isDefault }
-                    .collect { dateSelectionChangedArs ->
-                        if (dateSelectionChangedArs.currentSelectedDayEpoch == currentSelectedDate) return@collect
-                        currentSelectedDate = dateSelectionChangedArs.currentSelectedDayEpoch
-                        selectNewDateTab(dateSelectionChangedArs)
-                        selectNewPage(dateSelectionChangedArs)
-                    }
             }
         }
     }
 
-    private fun selectNewPage(dateSelectionChangedArs: DateSelectionChangedArgs) {
-        val date = LocalDate.ofEpochDay(dateSelectionChangedArs.currentSelectedDayEpoch)
-        binding.dailyTaskRepresentationViewPager.currentItem = dailyDateRange.positionOf(date)
-    }
+//    private fun subscribeToSelectedDate() {
+//        viewLifecycleOwner.lifecycleScope.launch {
+//            repeatOnLifecycle(Lifecycle.State.RESUMED) {
+//                taskContainerViewModel.taskContainerState
+//                    .map { it.dateSelectionChangedArgs }
+//                    .filter { !it.isDefault }
+//                    .collect { dateSelectionChangedArgs ->
+//                        if (dateSelectionChangedArgs.currentSelectedDayEpoch == currentSelectedDate) return@collect
+//                        currentSelectedDate = dateSelectionChangedArgs.currentSelectedDayEpoch
+//                        selectNewDateTab(dateSelectionChangedArgs)
+//                        selectNewPage(dateSelectionChangedArgs)
+//                    }
+//            }
+//        }
+//    }
 
-    private fun selectNewDateTab(dateSelectionChangedArs: DateSelectionChangedArgs) {
-        if (tabAdapter == null) return
-        val layoutManager = binding.dailyDateTabList.layoutManager as? LinearLayoutManager ?: return
+//    private fun selectNewPage(dateSelectionChangedArs: DateSelectionChangedArgs) {
+//        val date = LocalDate.ofEpochDay(dateSelectionChangedArs.currentSelectedDayEpoch)
+//        binding.dailyTaskRepresentationViewPager.currentItem = dailyDateRange.positionOf(date)
+//    }
+//
+//    private fun selectNewDateTab(dateSelectionChangedArs: DateSelectionChangedArgs) {
+//        if (tabAdapter == null) return
+//        val layoutManager = binding.dailyDateTabList.layoutManager as? LinearLayoutManager ?: return
+//
+//        val previousSelectedPos =
+//            dailyDateRange.positionOf(dateSelectionChangedArs.previousSelectedDayEpoch)
+//        val currentSelectedPos =
+//            dailyDateRange.positionOf(dateSelectionChangedArs.currentSelectedDayEpoch)
+//
+//        val previousSelectedTab = layoutManager.findViewByPosition(previousSelectedPos)
+//        val currentSelectedTab = layoutManager.findViewByPosition(currentSelectedPos)
+//        //если предыдущий выбранный таб виден и новый выбранный таб рядом
+//        val res = isNewSelectedTabNear(
+//            previousSelectedPos, currentSelectedPos
+//        )
+//        if ((previousSelectedTab != null && res) || currentSelectedTab != null) {
+//            smoothScroll(previousSelectedPos, currentSelectedPos)
+//        } else {
+//            instantScroll(
+//                previousSelectedPos,
+//                currentSelectedPos,
+//            )
+//        }
+//
+//    }
 
-        val previousSelectedPos =
-            dailyDateRange.positionOf(dateSelectionChangedArs.previousSelectedDayEpoch)
-        val currentSelectedPos =
-            dailyDateRange.positionOf(dateSelectionChangedArs.currentSelectedDayEpoch)
-
-        val previousSelectedTab = layoutManager.findViewByPosition(previousSelectedPos)
-        val currentSelectedTab = layoutManager.findViewByPosition(currentSelectedPos)
-        //если предыдущий выбранный таб виден и новый выбранный таб рядом
-        val res = isNewSelectedTabNear(
-            previousSelectedPos, currentSelectedPos
-        )
-        if ((previousSelectedTab != null && res) || currentSelectedTab != null) {
-            smoothScroll(previousSelectedPos, currentSelectedPos)
-        } else {
-            instantScroll(
-                previousSelectedPos,
-                currentSelectedPos,
-            )
-        }
-
-    }
-
-    private fun isNewSelectedTabNear(previousSelectedPos: Int, currentSelectedPos: Int): Boolean {
-        var calculatedWidth = 0
-        val helperView = LayoutInflater.from(requireContext())
-            .inflate(R.layout.task_tracker_daily_date_tab, binding.dailyDateTabList, false)
-
-        fun helperCalculation(i: Int): Boolean {
-            val currentDateText = dailyDateRange.dateAt(i).format(dateTimeFormatter)
-            calculatedWidth += getTabWidth(helperView, currentDateText)
-            if (calculatedWidth > binding.dailyDateTabList.width) {
-                return false
-            }
-            return true
-        }
-
-        if (previousSelectedPos < currentSelectedPos) {
-            for (i in (previousSelectedPos + 1)..currentSelectedPos) {
-                val calculationResult = helperCalculation(i)
-                if (!calculationResult) return false
-            }
-            return true
-        } else {
-            for (i in (previousSelectedPos - 1) downTo currentSelectedPos) {
-                val calculationResult = helperCalculation(i)
-                if (!calculationResult) return false
-            }
-            return true
-        }
-
-    }
+//    private fun isNewSelectedTabNear(previousSelectedPos: Int, currentSelectedPos: Int): Boolean {
+//        var calculatedWidth = 0
+//        val helperView = LayoutInflater.from(requireContext())
+//            .inflate(R.layout.task_tracker_daily_date_tab, binding.dailyDateTabList, false)
+//
+//        fun helperCalculation(i: Int): Boolean {
+//            val currentDateText = dailyDateRange.dateAt(i).format(dateTimeFormatter)
+//            calculatedWidth += getTabWidth(helperView, currentDateText)
+//            if (calculatedWidth > binding.dailyDateTabList.width) {
+//                return false
+//            }
+//            return true
+//        }
+//
+//        if (previousSelectedPos < currentSelectedPos) {
+//            for (i in (previousSelectedPos + 1)..currentSelectedPos) {
+//                val calculationResult = helperCalculation(i)
+//                if (!calculationResult) return false
+//            }
+//            return true
+//        } else {
+//            for (i in (previousSelectedPos - 1) downTo currentSelectedPos) {
+//                val calculationResult = helperCalculation(i)
+//                if (!calculationResult) return false
+//            }
+//            return true
+//        }
+//
+//    }
 
     private fun getTabWidth(view: View, text: String): Int {
         view.findViewById<TextView>(R.id.date_tab).text = text
