@@ -1,9 +1,10 @@
 package ru.albertabdullin.todooshka.presentation.screen.tasks.value_object
 
 data class DateSelectionChangedArgs(
-    val previousSelectedDayEpoch: Long = Long.MIN_VALUE,
-    val currentSelectedDayEpoch: Long = Long.MIN_VALUE,
+    val previousSelectedPos: Int = Int.MIN_VALUE,
+    val currentSelectedPos: Int = Int.MIN_VALUE,
+    val previousSelectedCurrentSelectedDatesTextsRangeList: List<String>
 ) {
     val isDefault: Boolean
-        get() = previousSelectedDayEpoch == currentSelectedDayEpoch
+        get() = previousSelectedPos == currentSelectedPos
 }
