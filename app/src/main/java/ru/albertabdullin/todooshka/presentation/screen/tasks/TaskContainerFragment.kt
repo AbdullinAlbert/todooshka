@@ -21,7 +21,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import ru.albertabdullin.todooshka.R
 import ru.albertabdullin.todooshka.databinding.TaskContainerBinding
-import ru.albertabdullin.todooshka.domain.date_operations.LAST_AVAILABLE_DATE
 import ru.albertabdullin.todooshka.presentation.dialog.datepicker.DatePickerFactory
 import ru.albertabdullin.todooshka.presentation.dialog.datepicker.model.AvailableDateRange
 import ru.albertabdullin.todooshka.presentation.extensions.diContainer
@@ -139,7 +138,7 @@ class TaskContainerFragment : Fragment() {
                             selectedDate = datePickerArgs.selectedDate,
                             availableDateRange = AvailableDateRange(
                                 startDate = datePickerArgs.firstDate,
-                                endDate = LAST_AVAILABLE_DATE
+                                endDate = datePickerArgs.lastDate
                             )
                         )
                         datePicker.addOnPositiveButtonClickListener { selectedDateMillis ->
@@ -174,8 +173,7 @@ class TaskContainerFragment : Fragment() {
     private fun initToolBar() {
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                taskContainerViewModel.taskContainerState
-                    .map { it }
+                taskContainerViewModel.taskTrackerMode
                     .collect {
                         binding.taskTrackerToolbar.removeMenuProvider(
                             dailyMenuProviderReadMode
@@ -235,7 +233,7 @@ class TaskContainerFragment : Fragment() {
     private fun initScreen() {
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                taskContainerViewModel.taskContainerState
+                taskContainerViewModel.taskTrackerMode
                     .map { it.representationTaskTrackerMode }
                     .distinctUntilChanged()
                     .collect {

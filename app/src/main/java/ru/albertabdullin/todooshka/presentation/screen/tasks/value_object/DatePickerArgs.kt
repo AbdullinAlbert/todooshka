@@ -4,5 +4,6 @@ import java.time.LocalDate
 
 data class DatePickerArgs(
     val firstDate: LocalDate,
-    val selectedDate: LocalDate
+    val lastDate: LocalDate,
+    val selectedDate: LocalDate,
 )

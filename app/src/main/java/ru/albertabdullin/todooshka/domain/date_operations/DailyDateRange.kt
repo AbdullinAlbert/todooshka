@@ -4,10 +4,13 @@ import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 
 data class DailyDateRange(
-    val previousFirstDate: LocalDate,
-    val currentFirstDate: LocalDate,
-    private val lastDate: LocalDate
+    val previousFirstDate: LocalDate = LocalDate.MIN,
+    val currentFirstDate: LocalDate = LocalDate.MIN,
 ) {
+    val lastDate: LocalDate = LAST_AVAILABLE_DATE
+
+    val isDefault: Boolean
+        get() = currentFirstDate == LocalDate.MIN
 
     val size: Int = ChronoUnit.DAYS.between(currentFirstDate, lastDate).toInt() + 1
 

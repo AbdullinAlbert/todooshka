@@ -1,5 +1,6 @@
 package ru.albertabdullin.todooshka.presentation.screen.tasks.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -8,13 +9,14 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 import ru.albertabdullin.todooshka.domain.date_operations.DailyDateRange
-import ru.albertabdullin.todooshka.domain.date_operations.LAST_AVAILABLE_DATE
 import ru.albertabdullin.todooshka.domain.repository.TaskRepository
 import ru.albertabdullin.todooshka.presentation.screen.tasks.value_object.DatePickerArgs
 import ru.albertabdullin.todooshka.presentation.screen.tasks.value_object.DateSelectionChangedArgs
@@ -26,18 +28,14 @@ class TaskContainerViewModel(
     private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    private val _tasksDateRange = MutableStateFlow(
-        DailyDateRange(
-            previousFirstDate = LocalDate.now(),
-            currentFirstDate = LocalDate.now(),
-            lastDate = LAST_AVAILABLE_DATE
-        )
-    )
+    private val _tasksDateRange = MutableStateFlow(DailyDateRange())
+    val tasksDateRange: Flow<DailyDateRange> = _tasksDateRange.filter { !it.isDefault }
 
-    val tasksDateRange: StateFlow<DailyDateRange> = _tasksDateRange
+    private val _dailyDatesDataContext = MutableStateFlow(DailyDatesDataContext())
+    val dailyDatesDataContext: Flow<DailyDatesDataContext> = _dailyDatesDataContext.filter { !it.isDefault }
 
-    private val _taskContainerState = MutableStateFlow(TaskTrackerState())
-    val taskContainerState: StateFlow<TaskTrackerState> = _taskContainerState
+    private val _taskTrackerMode = MutableStateFlow(TaskTrackerMode())
+    val taskTrackerMode: StateFlow<TaskTrackerMode> = _taskTrackerMode
 
     private val _openCalendarEvent = MutableSharedFlow<DatePickerArgs>(
         replay = 0,
@@ -46,7 +44,6 @@ class TaskContainerViewModel(
     )
 
     val openCalendarEvent: SharedFlow<DatePickerArgs> = _openCalendarEvent
-
 
     private val _appBarItemMenuEvent = MutableSharedFlow<AppBarItemMenuEvent>(
         replay = 0,
@@ -92,29 +89,38 @@ class TaskContainerViewModel(
         }
 
     fun onNewDateIsSelected(selectedDate: LocalDate) {
-        val (previous, current) = updateSelectedDate(selectedDate) ?: return
+        val (previousPos, currentPos) = updateSelectedDate(selectedDate) ?: return
         viewModelScope.launch {
-            _taskContainerState.emit(
-                _taskContainerState.value.copy(
+            _dailyDatesDataContext.emit(
+                _dailyDatesDataContext.value.copy(
                     dateSelectionChangedArgs = DateSelectionChangedArgs(
-                        previous,
-                        current,
-                    )
+                        previousPos,
+                        currentPos,
+                    ),
+                    dateRange = _tasksDateRange.value
                 )
             )
         }
     }
 
-    private fun updateSelectedDate(selectedDate: LocalDate): Pair<Long, Long>? {
+    private fun updateSelectedDate(selectedDate: LocalDate): Pair<Int, Int>? {
+        Log.d(TaskContainerViewModel::class.simpleName, "updateSelectedDate selectedDate = $selectedDate")
+
         if (selectedDate.toEpochDay() == selectedDateEpochDay) return null
         val previousSelectedDayEpoch = selectedDateEpochDay
         val currentSelectedDayEpoch = selectedDate.toEpochDay()
         savedStateHandle[SELECTED_DATE_KEY] = currentSelectedDayEpoch
-        return Pair(previousSelectedDayEpoch, currentSelectedDayEpoch)
+        return Pair(
+            _tasksDateRange.value.positionOf(previousSelectedDayEpoch),
+            _tasksDateRange.value.positionOf(currentSelectedDayEpoch)
+        )
     }
 
     fun isSelectedDate(localDate: LocalDate): Boolean {
-        return localDate.isEqual(LocalDate.ofEpochDay(selectedDateEpochDay))
+        val selectedDate = LocalDate.ofEpochDay(selectedDateEpochDay)
+        val res = localDate.isEqual(selectedDate)
+        Log.d(TaskContainerViewModel::class.simpleName, "localDate = $localDate, selectedDate = $selectedDate, res = $res")
+        return res
     }
 
     fun openCalendarDialogButtonIsClicked() {
@@ -122,6 +128,7 @@ class TaskContainerViewModel(
             _openCalendarEvent.emit(
                 DatePickerArgs(
                     firstDate = _tasksDateRange.value.currentFirstDate,
+                    lastDate = _tasksDateRange.value.lastDate,
                     selectedDate = LocalDate.ofEpochDay(selectedDateEpochDay)
                 )
             )
@@ -129,10 +136,10 @@ class TaskContainerViewModel(
     }
 
     fun onTaskTrackerRepresentationChanged() {
-        val newRepresentation = _taskContainerState.value.representationTaskTrackerMode.inverse()
+        val newRepresentation = _taskTrackerMode.value.representationTaskTrackerMode.inverse()
         viewModelScope.launch {
-            _taskContainerState.emit(
-                _taskContainerState.value.copy(representationTaskTrackerMode = newRepresentation)
+            _taskTrackerMode.emit(
+                _taskTrackerMode.value.copy(representationTaskTrackerMode = newRepresentation)
             )
         }
     }
@@ -151,8 +158,8 @@ class TaskContainerViewModel(
 
     fun onTasksSaved() {
         viewModelScope.launch {
-            _taskContainerState.emit(
-                _taskContainerState.value.copy(taskTrackerWorkMode = TaskTrackerWorkMode.READ)
+            _taskTrackerMode.emit(
+                _taskTrackerMode.value.copy(taskTrackerWorkMode = TaskTrackerWorkMode.READ)
             )
         }
     }
@@ -160,8 +167,8 @@ class TaskContainerViewModel(
     fun onTaskDescriptionFocus(hasFocus: Boolean) {
         if (hasFocus) {
             viewModelScope.launch {
-                _taskContainerState.emit(
-                    _taskContainerState.value.copy(taskTrackerWorkMode = TaskTrackerWorkMode.EDIT)
+                _taskTrackerMode.emit(
+                    _taskTrackerMode.value.copy(taskTrackerWorkMode = TaskTrackerWorkMode.EDIT)
                 )
             }
         }
@@ -199,11 +206,18 @@ enum class RepresentationTaskTrackerMode {
     }
 }
 
-data class TaskTrackerState(
+data class TaskTrackerMode(
     val representationTaskTrackerMode: RepresentationTaskTrackerMode = RepresentationTaskTrackerMode.DAILY,
-    val taskTrackerWorkMode: TaskTrackerWorkMode = TaskTrackerWorkMode.READ,
-    val dateSelectionChangedArgs: DateSelectionChangedArgs = DateSelectionChangedArgs(),
+    val taskTrackerWorkMode: TaskTrackerWorkMode = TaskTrackerWorkMode.READ
 )
+
+data class DailyDatesDataContext(
+    val dateSelectionChangedArgs: DateSelectionChangedArgs = DateSelectionChangedArgs(),
+    val dateRange: DailyDateRange = DailyDateRange()
+) {
+    val isDefault: Boolean
+        get() = dateSelectionChangedArgs.isDefault || dateRange.isDefault
+}
 
 sealed interface AppBarItemMenuEvent
 
